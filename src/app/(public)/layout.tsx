@@ -2,9 +2,9 @@ import React, { ReactNode } from 'react'
 
 const publiclayout = ({children}:{children:ReactNode}) => {
   return (
-    <div>
+    <div className='min-w-full'>
         public header
-        <div>{children}</div>
+        <div className='w-full '>{children}</div>
     </div>
   )
 }

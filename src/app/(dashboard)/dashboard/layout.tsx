@@ -12,7 +12,7 @@ const layout = ({children}:{children:ReactNode}) => {
        <div className='flex items-start w-full'>
 
          <DashboardSidebar/>
-         <div>
+         <div className='w-full'>
           {children}
          </div>
 
