@@ -17,6 +17,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import SocialLogin from './SocialLogin'
 import SignInSuccessLoader from './SuccessLoader'
+import { UserRole } from '@/interfaces/enums'
 
 export function SignInForm() {
     const router = useRouter()
@@ -54,23 +55,15 @@ console.log(result);
     async function onSubmit(data: LoginFormData) {
         try {
             const userData = await signInMutation(data);
-
-             
             if (userData?.success) {
                 toast.success("You are Login Successfully")
-                const role = userData.user.role;
-                
-                let url = "/dashboard";
-                if (role === "PATIENT") url = "/patient/dashboard";
-                else if (role === "DOCTOR") url = "/doctor/dashboard";
-                else if (role === "ADMIN" || role === "SUPER_ADMIN") url = "/admin";
-
-                // We keep showLoading true while Next.js finishes the push
-                router.push(url);
+                  if(userData.user.role !== UserRole.USER) {
+                router.push("/unauthorize");
+                  }
+                router.push("/dashboard");
             }else{
                 toast.error(userData.message)
             setShowLoading(false) // Hide loader if logic fails after success
-
             }
         } catch (error) {
             console.error("Login Error:", error);

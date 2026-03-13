@@ -1,10 +1,12 @@
 "use client";
 
+import { IUser } from "@/interfaces/user";
+import { getMe } from "@/services/auth.services";
 import { createContext, useContext, useEffect, useState } from "react";
 
 
 interface IUserContext {
-  user: null,
+  user: IUser | null,
   isLoading:boolean
 }
 export const UserContext = createContext<IUserContext | undefined>(undefined);
@@ -18,7 +20,7 @@ export default function UserContextWrapper({ children }: { children: React.React
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch("")
+        const res = await getMe()
         setUserPayload({ user: res?.data || null, isLoading: false });
       } catch (err) {
         console.error(err);

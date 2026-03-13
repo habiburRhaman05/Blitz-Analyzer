@@ -31,7 +31,6 @@ export default async function RootLayout({
       <body className={`${inter.variable} font-sans mx-auto antialiased bg-background text-foreground`}>
        
         <Providers>
-      
           <UserContextWrapper>
           {children}
         </UserContextWrapper>
