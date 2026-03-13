@@ -10,3 +10,5 @@ const publiclayout = ({children}:{children:ReactNode}) => {
 }
 
 export default publiclayout
+
+
