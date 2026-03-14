@@ -3,6 +3,7 @@ import httpClient from '@/lib/axios-client';
 import { useEffect, useState } from 'react';
 import AnalysisDetails, { AnalysisSkeleton } from './ATSAnalysisDetails';
 import JobMatcherDetails from './JobMatcherAnalysisDetails';
+import SaveAnalysisResult from './SaveAnalysisResult';
 
 const AnalysisDetailsWrapper = ({id}:{id:string}) => {
 
@@ -35,7 +36,8 @@ const AnalysisDetailsWrapper = ({id}:{id:string}) => {
 
   return (
     <div>
-{/* {data && JSON.stringify(data)} */}
+{data && <SaveAnalysisResult id={id}/>}
+
  {
     data && data?.analysis_type === "ATS_SCAN" ? <AnalysisDetails data={data}/> : <JobMatcherDetails data={data}/>
  }

@@ -16,3 +16,9 @@ export enum UserRole {
  
 }
 
+
+
+export enum AnalysisType {
+    ATS_SCAN= 'ATS_SCAN',
+  JOB_MATCHER= 'JOB_MATCHER'
+}

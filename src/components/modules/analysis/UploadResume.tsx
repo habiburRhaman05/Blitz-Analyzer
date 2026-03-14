@@ -22,20 +22,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import httpClient from "@/lib/axios-client";
+import { AnalysisType } from "@/interfaces/enums";
 
-// Localized Types
-type AnalysisType = "ats_scan" | "job_match";
+
 
 const analysisOptions = [
   {
-    type: "ats_scan" as AnalysisType,
+    type: AnalysisType.ATS_SCAN ,
     icon: Shield,
     label: "ATS Resume Scan",
     desc: "Deep-scan your resume for ATS compatibility, formatting issues, and keyword density",
     features: ["ATS score analysis", "Format validation", "Keyword density check"],
   },
   {
-    type: "job_match" as AnalysisType,
+    type: AnalysisType.JOB_MATCHER,
     icon: Briefcase,
     label: "Job Match Analysis",
     desc: "Compare your resume against a specific job posting for tailored feedback",
@@ -53,7 +53,7 @@ export default function UploadPage() {
 
   // Form Data State
   const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [analysisType, setAnalysisType] = useState<AnalysisType>("ats_scan");
+  const [analysisType, setAnalysisType] = useState<AnalysisType>(AnalysisType.ATS_SCAN);
   const [jobTitle, setJobTitle] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [keyRequirements, setKeyRequirements] = useState("");
@@ -85,7 +85,7 @@ export default function UploadPage() {
     const errs: Record<string, string> = {};
     if (!resumeFile) errs.file = "Please upload a resume";
     
-    if (analysisType === "job_match") {
+    if (analysisType === AnalysisType.JOB_MATCHER) {
       if (!jobTitle.trim()) errs.jobTitle = "Job title is required";
       if (!jobDescription.trim()) errs.jobDescription = "Job description is required";
     }
@@ -110,7 +110,7 @@ const handleSubmit = async () => {
       formData.append("analysisType", analysisType);
 
       // If Job Match, append the nested data as a stringified JSON
-      if (analysisType === "job_match") {
+      if (analysisType === AnalysisType.JOB_MATCHER) {
         formData.append(
           "jobData", 
           JSON.stringify({
@@ -151,7 +151,7 @@ const handleSubmit = async () => {
     }
   };
 
-  const isJobMatch = analysisType === "job_match";
+  const isJobMatch = analysisType === AnalysisType.JOB_MATCHER ? true :false;
 
   return (
     <div className="min-h-screen bg-background">

@@ -9,7 +9,7 @@ const AnalysisDetailsPage = async ({params}:{params:{id:string}}) => {
     <div>
 
     <AnalysisDetailsWrapper id={id}/>
-
+    
     </div>
   )
 }
