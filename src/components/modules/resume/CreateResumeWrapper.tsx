@@ -55,7 +55,7 @@ export default function CreateResumeWrapper() {
 
   // --- API Fetching ---
   const { data, isFetching } = useApiQuery(
-    ["templates"],
+    ["templates-list"],
     "/template",
     "axios",
     { staleTime: 1000 * 60 * 5 }

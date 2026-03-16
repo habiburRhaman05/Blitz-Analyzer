@@ -14,7 +14,8 @@ import {
   ArrowRight,
   ShieldCheck,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  Loader
 } from "lucide-react";
 import {
   AlertDialog,
@@ -112,9 +113,10 @@ const TemplateDetails = ({ id }: TemplateDetailsProps) => {
              )}
              <Button 
                onClick={handleUseTemplateClick} 
+               disabled={initlizeResumeMutation.isPending}
                className="rounded-full shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90"
              >
-                Use Template <ArrowRight className="ml-2 h-4 w-4" />
+                Use Template {initlizeResumeMutation.isPending ?  <Loader className="ml-2 h-4 w-4" /> :  <ArrowRight className="ml-2 h-4 w-4" />}
              </Button>
           </div>
         </div>
@@ -214,11 +216,11 @@ const TemplateDetails = ({ id }: TemplateDetailsProps) => {
                 <h3 className="text-xl font-bold">Included Sections</h3>
               </div>
               <div className="flex flex-wrap gap-2">
-                {template.sections.map((section: string) => (
+                {/* {template.sections.map((section: string) => (
                   <Badge key={section} variant="secondary" className="px-4 py-1.5 rounded-full capitalize">
                     {section}
                   </Badge>
-                ))}
+                ))} */}
               </div>
             </section>
 
