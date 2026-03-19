@@ -94,7 +94,7 @@ export default function AnalysisHistoryWrapper() {
     '/analyzer/get-analysis-history',
     'axios',{
       refetchOnWindowFocus:false,
-      staleTime:2*1000
+      staleTime:2*60*1000
     }
   );
 
