@@ -9,7 +9,6 @@ import {
   FileText,
   Layers, Lightbulb,
   ShieldCheck,
-  Sparkles,
   Target,
   Zap
 } from "lucide-react";
@@ -17,10 +16,9 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import SaveAnalysisResult from "./SaveAnalysisResult";
-import { AnalysisError, AnalysisNotFound, Badge } from "./AnalysisNotFound";
-import { AnalysisSkeleton } from "./AnalysisDetailsSkelections";
 import { useRouter } from "next/navigation";
+import { Badge } from "./AnalysisNotFound";
+import SaveAnalysisResult from "./SaveAnalysisResult";
 
 interface AnalysisPageProps {
   data: any;
