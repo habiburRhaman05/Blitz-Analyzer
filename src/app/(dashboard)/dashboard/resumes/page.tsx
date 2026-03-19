@@ -15,7 +15,7 @@ const queryClient = new QueryClient();
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
     <ResumeListingWrapper cacheKey={cacheKey}/>
-    </HydrationBoundary>
+     </HydrationBoundary>
   )
 }
 

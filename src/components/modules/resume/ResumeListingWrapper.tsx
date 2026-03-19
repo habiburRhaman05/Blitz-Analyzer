@@ -42,7 +42,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useApiQuery } from "@/hooks/useApiQuery";
 import { getAllResumeById, updateResumeName, deleteResume } from "@/services/resume.services";
 import { toast } from "sonner";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // ----------------------------------------------------------------------
 // Types
@@ -178,18 +178,10 @@ export default function ResumeListingWrapper({ cacheKey }: ResumeListingWrapperP
 
   const queryClient  = useQueryClient()
   // Fetch resumes
-const { data, isLoading, isError, error, refetch } = useApiQuery<ApiResponse>(
-  [cacheKey],
-  getAllResumeById,
-  "axios",
-  {
-    refetchOnWindowFocus: false,
-    staleTime: 2 * 60 * 1000, // Data is fresh for 2 minutes
-    gcTime: 5 * 60 * 1000, // Cache is kept for 5 minutes (formerly cacheTime)
-    refetchOnMount: true,
-    refetchOnReconnect: true,
-  }
-);
+const { data, isLoading, isError, error, refetch } = useQuery<ApiResponse>({
+  queryKey:[cacheKey],
+  queryFn:getAllResumeById
+});
   console.log(data);
   
 
@@ -203,7 +195,7 @@ const { data, isLoading, isError, error, refetch } = useApiQuery<ApiResponse>(
       updateResumeName({resumeId:resumeId,body:{name:name}}),
     onSuccess: (data) => {
 
-
+       refetch()
       toast.success(data.message);
       setUpdatingId(null);
     
@@ -219,7 +211,7 @@ const { data, isLoading, isError, error, refetch } = useApiQuery<ApiResponse>(
   const { mutateAsync: deleteResumeHandler, isPending: isDeleting } = useMutation({
     mutationFn: (id: string) => deleteResume(id),
     onSuccess: (data) => {
-
+       refetch()
       toast.success(data.message);
       setDeletingId(null);
    
