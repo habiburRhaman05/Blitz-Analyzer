@@ -75,7 +75,7 @@ export default function DashboardHeader() {
           {[
             { label: "Dashboard", path: "/profile" },
             { label: "Upload", path: "/upload" },
-            { label: "Pricing", path: "/billing" },
+            { label: "Pricing", path: "/pricing" },
           ].map((link) => (
             <Button 
               key={link.path} 

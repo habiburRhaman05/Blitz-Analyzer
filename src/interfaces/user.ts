@@ -24,7 +24,7 @@ export interface IBaseUser {
   name: string;
   email: string;
   image: string;
-  role: 'DOCTOR' | 'PATIENT' | 'ADMIN' | 'SUPER_ADMIN';
+  role:  'ADMIN' | 'USER';
   status: 'ACTIVE' | 'BANNED' | 'DELETED';
   needPasswordChange: boolean;
   emailVerified: boolean;
