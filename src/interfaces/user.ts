@@ -11,6 +11,7 @@ export interface IUser {
   experienceLevel: string;
   profession: string;
   profileAvatar:string
+  isFreeCreditClaim:boolean
   analysisHistory:AnalysisResult[]
   wallet:{
     balance:number

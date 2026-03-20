@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useUser } from "@/context/UserContext";
 import ClaimFreeCredits from "./ClamFreeCredit";
+import { AvatarUpload } from "./ProfileAvatar";
 
 // ----------------------------------------------------------------------
 // AvatarUpload Component
@@ -21,73 +22,7 @@ interface AvatarUploadProps {
   onUpload: (file: File) => Promise<void>;
 }
 
-function AvatarUpload({ imageUrl, initials, onUpload }: AvatarUploadProps) {
-  const [uploading, setUploading] = useState(false);
-  const [preview, setPreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Create preview
-    const objectUrl = URL.createObjectURL(file);
-    setPreview(objectUrl);
-    setUploading(true);
-
-    try {
-      await onUpload(file);
-      // After successful upload, keep preview or reset based on actual update
-      // For this example we clear the preview after upload (simulate server update)
-      // In a real app you might want to show the uploaded image.
-      setTimeout(() => {
-        setPreview(null);
-        setUploading(false);
-        if (fileInputRef.current) fileInputRef.current.value = "";
-      }, 1500);
-    } catch (error) {
-      toast.error("Failed to upload image");
-      setPreview(null);
-      setUploading(false);
-    }
-  };
-
-  return (
-    <div className="relative group">
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        accept="image/*"
-        className="hidden"
-        disabled={uploading}
-      />
-      <div
-        onClick={() => !uploading && fileInputRef.current?.click()}
-        className="cursor-pointer"
-      >
-        <Avatar className="h-20 w-20 ring-2 ring-border group-hover:ring-primary transition-all duration-200">
-          <AvatarImage src={preview || imageUrl || undefined} />
-          <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-background/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity">
-          {uploading ? (
-            <Loader2 className="h-5 w-5 animate-spin text-primary" />
-          ) : (
-            <Camera className="h-5 w-5 text-foreground" />
-          )}
-        </div>
-      </div>
-      {uploading && (
-        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs text-muted-foreground">
-          Uploading...
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ----------------------------------------------------------------------
 // Main AccountPage Component
@@ -190,27 +125,18 @@ export default function AccountPage() {
         <p className="mt-1 text-muted-foreground">Manage your personal information and preferences</p>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="mt-8 flex items-center gap-6"
-      >
-        <AvatarUpload
-          imageUrl={user?.profileAvatar || user?.user?.image}
-          initials={initials}
-          onUpload={handleAvatarUpload}
-        />
-        <div>
-          <p className="font-display text-lg font-semibold">{user?.name}</p>
-          <p className="text-sm text-muted-foreground">{user?.email}</p>
-          {user?.profession && (
-            <span className="mt-1 inline-block rounded-full bg-primary/10 px-3 py-0.5 text-xs font-medium text-primary">
-              {user.profession}
-            </span>
-          )}
-        </div>
-      </motion.div>
+   <AvatarUpload
+  imageUrl={user?.profileAvatar}
+  initials={user?.name?.charAt(0) || "U"}
+  onUpload={async (file) => {
+    // Replace with actual API call
+    const formData = new FormData();
+    formData.append("avatar", file);
+    const response = await fetch("/api/user/avatar", { method: "POST", body: formData });
+    const data = await response.json();
+    return data.avatarUrl;
+  }}
+/>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
