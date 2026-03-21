@@ -45,9 +45,9 @@ export const handleLogin = async (loginPayload: signInPayloadType) => {
 
     const { accessToken, refreshToken, sessionToken, user, message } = res.data.data;
 
-    await setTokenInCookies("accessToken", accessToken,15*60);
-    await setTokenInCookies("better-auth.session_token", sessionToken,15*60);
-    await setTokenInCookies("refreshToken", refreshToken,60*60);
+    await setTokenInCookies("accessToken", accessToken,60*60);
+    await setTokenInCookies("better-auth.session_token", sessionToken,60*60);
+    await setTokenInCookies("refreshToken", refreshToken,120*60);
     //  redirect("/dashboard")
     return {
       success: true,

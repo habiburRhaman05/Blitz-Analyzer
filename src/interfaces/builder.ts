@@ -1,50 +1,90 @@
-export type FieldType =
+export type FieldOperator =
+  | "eq"
+  | "neq"
+  | "gt"
+  | "lt"
+  | "contains"
+  | "notContains"
+  | "empty"
+  | "notEmpty";
+
+export interface DynamicCondition {
+  field: string;
+  operator: FieldOperator;
+  value: any;
+}
+
+export type DynamicFieldType =
   | "text"
   | "email"
   | "url"
-  | "date"
-  | "select"
+  | "tel"
+  | "number"
   | "textarea"
   | "richtext"
-  | "checkbox";
+  | "date"
+  | "checkbox"
+  | "radio"
+  | "select"
+  | "multiselect"
+  | "file"
+  | "group"
+  | "array";
 
-export interface FieldUI {
-  placeholder?: string;
-  description?: string;
+export interface DynamicFieldValidation {
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+  pattern?: string;
+  message?: string;
+}
+
+export interface DynamicFieldUI {
   grid?: string;
+  rows?: number;
+  showCount?: boolean;
+  options?: Array<string | { label: string; value: string }>;
+  accept?: string;
+  maxLength?: number;
 }
 
-export interface FieldOption {
-  label?: string;
-  value: string;
-}
-
-export interface BuilderField {
+export interface DynamicField {
   name: string;
-  type: FieldType;
-  label?: string;
+  label: string;
+  type: DynamicFieldType;
   required?: boolean;
-  options?: string[];
-  ui?: FieldUI;
+  placeholder?: string;
+  helpText?: string;
+  multiple?: boolean;
+  options?: Array<string | { label: string; value: string }>;
+  validation?: DynamicFieldValidation;
+  ui?: DynamicFieldUI;
+  condition?: DynamicCondition;
+  fields?: DynamicField[];
 }
 
-export interface BuilderSection {
+export interface DynamicSection {
   key: string;
   label: string;
   type: "object" | "array";
   order: number;
-  fields: BuilderField[];
-  minItems?: number;
+  required?: boolean;
+  fields: DynamicField[];
+  condition?: DynamicCondition;
   ui?: {
-    addButtonText?: string;
-    itemTitle?: string;
+    columns?: number;
+    description?: string;
   };
 }
 
 export interface ResumeTemplate {
-  id: string;
+  id?: string;
   name: string;
-  sections: BuilderSection[];
-  htmlLayout: string;
-  resumeData?: any;
+  slug: string;
+  isPremium: boolean;
+  price?: number;
+  htmlLayout?: string;
+  sections?: DynamicSection[];
+  resumeData?: Record<string, any>;
 }

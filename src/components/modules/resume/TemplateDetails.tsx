@@ -78,7 +78,7 @@ return
  })
  
 
-   router.push(`/dashboard/templates/${id}/builder/${result.data.id}`);
+window.location.href = `/dashboard/templates/${id}/builder/${result.data.id}`
   
   };
 
