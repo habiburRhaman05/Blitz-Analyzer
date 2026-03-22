@@ -39,7 +39,9 @@ const formatDateTime = (date: string) => {
   })
 }
 
-const TransactionHistoryItems = ({ data }) => {
+const TransactionHistoryItems = ({data}) => {
+ 
+  
   return (
     <div className="divide-y divide-border/40">
       <AnimatePresence>

@@ -122,6 +122,23 @@ export async function  isTokenExpiringSoon(token: string) {
   }
 }
 
+export const changePassword = async (payload) =>{
+      const cookieStore = await cookies()
+
+try {
+    const {data} = await  httpClient.put("/auth/change-password", payload,{
+      headers: {
+            "cookie": cookieStore.toString()
+
+      }
+  });
+return data
+} catch (error) {
+  console.log(error);
+  
+}
+}
+
 
 export async function getTokens(req: NextRequest) {
   const accessToken = req.cookies.get('accessToken')?.value;

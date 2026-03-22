@@ -12,7 +12,8 @@ import {
   ChevronRight,
   ShieldCheck,
   HelpCircle,
-  User2
+  User2,
+  Calculator
 } from "lucide-react";
 
 import { NavLink } from "@/components/global/NavLink";
@@ -42,17 +43,25 @@ const NAVIGATION_CONFIG = {
     { path: "/dashboard/resumes", label: "My Resumes", icon: FilePlus },
     { path: "/dashboard/templates", label: "Templates", icon: LucideBookTemplate },
     { path: "/dashboard/history", label: "Analysis History", icon: History },
+    { path: "/dashboard/profile", label: "Profile", icon: User },
+    { path: "/dashboard/settings", label: "Settings", icon: Settings },
+
+
   ],
   ADMIN: [
     { path: "/admin/dashboard", label: "Admin Overview", icon: LayoutDashboard, exact: true },
     { path: "/admin/dashboard/templates", label: "Manage Templates", icon: LucideBookTemplate },
     { path: "/admin/dashboard/users", label: "Manage All Users", icon: User2 },
     { path: "/admin/dashboard/transactions", label: "Transactions", icon: History },
+    { path: "/admin/dashboard/manage-plans", label: "Pricing Modals", icon: Calculator },
+    { path: "/admin/dashboard/profile", label: "Profile", icon: User },
+    { path: "/admin/dashboard/settings", label: "Settings", icon: Settings },
+
+
   ],
   SETTINGS: [
-    { path: "/dashboard/profile", label: "Profile", icon: User },
-    { path: "/profile/plans", label: "Billing", icon: CreditCard },
-    { path: "/profile/settings", label: "Settings", icon: Settings },
+    { path: "/pricing", label: "Billing", icon: CreditCard },
+
   ]
 };
 

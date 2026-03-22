@@ -3,6 +3,7 @@
 import AppLoader from "@/components/global/AppLoader";
 import { IUser } from "@/interfaces/user";
 import { getMe } from "@/services/auth.services";
+import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState, useCallback, SetStateAction, Dispatch } from "react";
 
 interface IUserContext {
@@ -17,7 +18,7 @@ export const UserContext = createContext<IUserContext | undefined>(undefined);
 export default function UserContextWrapper({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<IUser | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
+  const router = useRouter()
   const fetchUser = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -40,6 +41,8 @@ export default function UserContextWrapper({ children }: { children: React.React
     
     fetchUser();
   }, [fetchUser]);
+
+
 
   // Loading overlay
   if (isLoading) {

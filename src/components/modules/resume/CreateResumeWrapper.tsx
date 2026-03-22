@@ -47,8 +47,7 @@ export default function CreateResumeWrapper() {
   const router = useRouter();
   const [category, setCategory] = useState<string>("all");
   const [showPremium, setShowPremium] = useState<"all" | "free" | "premium">("all");
-  const [aiPrompt, setAiPrompt] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
+
 
   // --- API Fetching ---
   const { data, isFetching } = useApiQuery(

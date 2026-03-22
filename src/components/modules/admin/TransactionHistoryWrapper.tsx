@@ -17,58 +17,89 @@ import {
 } from 'lucide-react'
 import TransactionHistoryItems from './TransactionHistoryItems'
 
+export type PaymentStatus = 'SUCCESS' | 'FAILED' | 'PENDING'
+
+export interface Transaction {
+  username: string
+  email: string
+  paymentId: string
+  paymentTime: string
+  invoice_url: string
+  paymentStatus: PaymentStatus
+  amount: number
+  currency: string
+  planName: string
+}
+
+export interface PaginationMeta {
+  page: number
+  limit: number
+  total: number
+  timestamp: string
+}
+
+export interface ApiResponse<T> {
+  success: boolean
+  message: string
+  data: {
+    data: T
+    meta: PaginationMeta
+  }
+}
 export default function TransactionHistoryWrapper() {
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date')
   const [order, setOrder] = useState<'asc' | 'desc'>('desc')
-
   const [page, setPage] = useState(1)
   const limit = 5
 
-  const { data, isFetching } = useApiQuery(
-    ['transactions', page],
-    `/payment/get-all-transactions?page=${page}&limit=${limit}`,
-    'axios'
-  )
+const { data, isFetching } = useApiQuery<ApiResponse<Transaction[]>>(
+  ['transactions', page.toString()],
+  `/payment/get-all-transactions?page=${page}&limit=${limit}`,
+  'axios'
+)
 
-  const meta = data?.data?.meta
+  const meta: PaginationMeta | undefined = data?.data?.data.meta
   const totalPages = meta ? Math.ceil(meta.total / meta.limit) : 1
 
-  const transactions = useMemo(() => {
-    let items = [...(data?.data?.data || [])]
+const transactions = useMemo(() => {
+  let items: Transaction[] = [...(data?.data?.data || []) as Transaction[]]
 
-    if (search) {
-      const q = search.toLowerCase()
-      items = items.filter(
-        (i) =>
-          i.username.toLowerCase().includes(q) ||
-          i.email.toLowerCase().includes(q) ||
-          i.planName.toLowerCase().includes(q)
-      )
+
+  if (search) {
+    const q = search.toLowerCase()
+    items = items.filter(
+      (i) =>
+        i.username.toLowerCase().includes(q) ||
+        i.email.toLowerCase().includes(q) ||
+        i.planName.toLowerCase().includes(q)
+    )
+  }
+
+  items.sort((a, b) => {
+    if (sortBy === 'date') {
+      return order === 'desc'
+        ? new Date(b.paymentTime).getTime() - new Date(a.paymentTime).getTime()
+        : new Date(a.paymentTime).getTime() - new Date(b.paymentTime).getTime()
     }
 
-    items.sort((a, b) => {
-      if (sortBy === 'date') {
-        return order === 'desc'
-          ? new Date(b.paymentTime).getTime() - new Date(a.paymentTime).getTime()
-          : new Date(a.paymentTime).getTime() - new Date(b.paymentTime).getTime()
-      }
+    if (sortBy === 'amount') {
+      return order === 'desc' ? b.amount - a.amount : a.amount - b.amount
+    }
 
-      if (sortBy === 'amount') {
-        return order === 'desc' ? b.amount - a.amount : a.amount - b.amount
-      }
+    if (sortBy === 'status') {
+      return order === 'desc'
+        ? b.paymentStatus.localeCompare(a.paymentStatus)
+        : a.paymentStatus.localeCompare(b.paymentStatus)
+    }
 
-      if (sortBy === 'status') {
-        return order === 'desc'
-          ? b.paymentStatus.localeCompare(a.paymentStatus)
-          : a.paymentStatus.localeCompare(b.paymentStatus)
-      }
+    return 0
+  })
 
-      return 0
-    })
+  return items
+},[search,sortBy,order,data])
 
-    return items
-  }, [data, search, sortBy, order])
+
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
@@ -79,6 +110,8 @@ export default function TransactionHistoryWrapper() {
           All your payments and invoices
         </p>
       </div>
+
+
 
       {/* Search + Sort */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between mb-6">

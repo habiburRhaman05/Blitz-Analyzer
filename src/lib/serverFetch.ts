@@ -37,10 +37,10 @@ console.log(`🌐 FETCH: ${path}`);
         },
         credentials: "include",
         cache:"no-cache",
-       next: { 
-            revalidate: revalidate,
-            tags: [path] // Useful for on-demand revalidation later
-        }
+    //    next: { 
+    //         revalidate: revalidate,
+    //         tags: [path] // Useful for on-demand revalidation later
+    //     }
     })
 
 const cacheStatus = res.headers.get('x-nextjs-cache');
