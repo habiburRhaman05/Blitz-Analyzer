@@ -11,7 +11,8 @@ import {
   LucideBookTemplate,
   ChevronRight,
   ShieldCheck,
-  HelpCircle
+  HelpCircle,
+  User2
 } from "lucide-react";
 
 import { NavLink } from "@/components/global/NavLink";
@@ -45,6 +46,7 @@ const NAVIGATION_CONFIG = {
   ADMIN: [
     { path: "/admin/dashboard", label: "Admin Overview", icon: LayoutDashboard, exact: true },
     { path: "/admin/dashboard/templates", label: "Manage Templates", icon: LucideBookTemplate },
+    { path: "/admin/dashboard/users", label: "Manage All Users", icon: User2 },
     { path: "/admin/dashboard/transactions", label: "Transactions", icon: History },
   ],
   SETTINGS: [

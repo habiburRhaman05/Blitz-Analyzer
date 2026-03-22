@@ -18,24 +18,18 @@ export const getProfile = async (): Promise<{ user: { data: any } } | null> => {
     cache: "no-store",
     credentials: "include",
   });
-
   console.log("cookies", cookieStore.toString());
-
   if (!res.ok) return null;
   const user = await res.json()
-
-
   return { user }
 };
 
 export const getMe = async ()=>{
 try {
     let data = await serverFetch("/auth/me",{});
-
-    
   return data
 } catch (error) {
-  console.log("errorrrrrrrrrrr");
+
   
   console.log(error);
   
