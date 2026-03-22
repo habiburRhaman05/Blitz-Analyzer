@@ -68,7 +68,7 @@ const AnalysisHistoryItems = ({setSortOrder,setSortBy,sortBy,filteredAndSorted,s
   const queryClient = useQueryClient()
 
   const handleDelete = async (analysesId:string)=>{
-    alert(analysesId)
+
        try {
         setIsDeleting(true);
         const result = await deleteAnalysis(analysesId);

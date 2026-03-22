@@ -1,22 +1,18 @@
 'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Sparkles, Filter, Crown, FileText, 
-  ArrowRight, Wand2, Loader2, ArrowLeft, 
-  Plus,
-  LayoutGrid
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowRight,
+  Crown, FileText,
+  Filter,
+  LayoutGrid,
+  Plus
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Dialog, DialogContent, DialogHeader, 
-  DialogTitle, DialogDescription 
-} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useApiQuery } from "@/hooks/useApiQuery";
 
 // --- Types based on your API Response ---
@@ -51,7 +47,6 @@ export default function CreateResumeWrapper() {
   const router = useRouter();
   const [category, setCategory] = useState<string>("all");
   const [showPremium, setShowPremium] = useState<"all" | "free" | "premium">("all");
-  const [aiModalOpen, setAiModalOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -82,15 +77,7 @@ export default function CreateResumeWrapper() {
     router.push(`/dashboard/templates/${id}?mode=template`);
   };
 
-  const handleAiGenerate = async () => {
-    if (!aiPrompt.trim()) return;
-    setAiLoading(true);
-    await new Promise((r) => setTimeout(r, 2000));
-    const id = `ai-${Date.now()}`;
-    setAiLoading(false);
-    setAiModalOpen(false);
-    router.push(`/dashboard/resumes/${id}?mode=ai&prompt=${encodeURIComponent(aiPrompt)}`);
-  };
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -158,22 +145,7 @@ export default function CreateResumeWrapper() {
               Start from scratch and build your resume your way.
             </p>
           </motion.div>
-          {/* AI Generation Card */}
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            onClick={() => setAiModalOpen(true)}
-            className="group relative cursor-pointer rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-8 flex flex-col items-center justify-center text-center min-h-[350px] hover:border-primary hover:bg-primary/10 transition-all shadow-sm"
-          >
-            <div className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center mb-6 shadow-xl shadow-primary/30 group-hover:rotate-6 transition-transform">
-              <Wand2 className="h-8 w-8 text-primary-foreground" />
-            </div>
-            <h3 className="text-xl font-bold mb-2">AI Smart Build</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Upload a job description and let Blitz AI tailor your resume instantly.
-            </p>
-          </motion.div>
          
-
          
         </div>
         {/* --- Section: Market Templates --- */}
@@ -236,45 +208,7 @@ export default function CreateResumeWrapper() {
         </div>
       </div>
 
-      {/* AI Modal */}
-      <Dialog open={aiModalOpen} onOpenChange={setAiModalOpen}>
-        <DialogContent className="sm:max-w-lg rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-2xl font-bold">
-              <Wand2 className="h-6 w-6 text-primary" />
-              AI Prompt
-            </DialogTitle>
-            <DialogDescription>
-              Describe your career or paste a job link. We&apos;ll handle the rest.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <Textarea
-              placeholder="e.g., I am a Fullstack Developer specializing in Next.js and AI integration. Help me build a resume for a Senior Role at a fintech startup."
-              value={aiPrompt}
-              onChange={(e) => setAiPrompt(e.target.value)}
-              className="min-h-[160px] rounded-2xl bg-muted/30 border-border/60 focus:ring-primary/20 resize-none p-4"
-            />
-            <Button
-              className="w-full h-12 bg-primary text-primary-foreground rounded-full font-bold shadow-lg shadow-primary/20"
-              onClick={handleAiGenerate}
-              disabled={!aiPrompt.trim() || aiLoading}
-            >
-              {aiLoading ? (
-                <>
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  Generate My Resume
-                </>
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+  
     </div>
   );
 }

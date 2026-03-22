@@ -16,7 +16,7 @@ export const getAllResumeById = async () =>{
 }
 export const updateResumeName  = async (data:{
     resumeId:string,
-    body:{name:string}
+    body:{name:string;templateId:string}
 }) =>{
     const result = await httpClient.post(`/resume/${data.resumeId}/update-resume`,data.body, {
         headers:{

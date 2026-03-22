@@ -79,7 +79,6 @@ export interface DynamicSection {
 }
 
 export interface ResumeTemplate {
-  id?: string;
   name: string;
   slug: string;
   isPremium: boolean;

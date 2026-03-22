@@ -199,7 +199,7 @@ const buildFieldSchema = (field: DynamicField): z.ZodTypeAny => {
     return schema;
   }
 
-  let schema: z.ZodTypeAny = z.string();
+  let schema: z.ZodTypeAny  | any= z.string();
 
   if (field.required) {
     schema = schema.min(1, {
@@ -261,7 +261,7 @@ export const generateZodSchema = (sections: DynamicSection[]): z.ZodObject<any> 
         itemShape[field.name] = buildFieldSchema(field);
       }
 
-      let sectionSchema: z.ZodTypeAny = z.array(z.object(itemShape).passthrough());
+      let sectionSchema: z.ZodTypeAny | any = z.array(z.object(itemShape).passthrough());
 
       if (section.required) {
         sectionSchema = sectionSchema.min(1, {

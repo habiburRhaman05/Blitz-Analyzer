@@ -3,17 +3,11 @@
 import {
   ArrowUpDown,
   ChevronDown,
-  Eye,
   FileText,
-  Loader,
-  MoreHorizontal,
-  Pencil,
-  Search,
-  Trash2,
+  Search
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useMemo, useState } from "react";
-import { formatDistanceToNow } from "date-fns";
+import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,13 +15,6 @@ import {
   Card,
   CardContent,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,14 +26,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useApiQuery } from "@/hooks/useApiQuery";
-import { getAllResumeById, updateResumeName, deleteResume } from "@/services/resume.services";
-import { toast } from "sonner";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getAllResumeById } from "@/services/resume.services";
+import { useQuery } from "@tanstack/react-query";
+import ResumeListItem from "./ResumeListItem";
 
-// ----------------------------------------------------------------------
+
 // Types
-// ----------------------------------------------------------------------
+
 interface ResumeItem {
   id: string;
   userId: string;
@@ -66,9 +52,9 @@ interface ApiResponse {
   meta: { timestamp: string };
 }
 
-// ----------------------------------------------------------------------
+
 // Skeleton row
-// ----------------------------------------------------------------------
+
 function SkeletonRow() {
   return (
     <div className="grid grid-cols-12 gap-4 px-6 py-5 items-center border-b border-border/40">
@@ -94,81 +80,10 @@ function SkeletonRow() {
   );
 }
 
-// ----------------------------------------------------------------------
-// Name Edit Dialog Component
-// ----------------------------------------------------------------------
-interface EditNameDialogProps {
-  resume: ResumeItem | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSave: (id: string, newName: string) => void;
-  isUpdating: boolean;
-}
 
-function EditNameDialog({ resume, open, onOpenChange, onSave, isUpdating }: EditNameDialogProps) {
-  const [name, setName] = useState(resume?.name || "");
 
-  // Update local state when resume changes
-  React.useEffect(() => {
-    if (resume) {
-      setName(resume.name || "");
-    }
-  }, [resume]);
-
-  const handleSave = () => {
-    if (resume && name.trim()) {
-      onSave(resume.id, name.trim());
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-2xl">
-        <DialogHeader>
-          <DialogTitle>Edit resume name</DialogTitle>
-        </DialogHeader>
-        <div className="py-4">
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter resume name"
-            className="rounded-xl"
-            autoFocus
-            disabled={isUpdating}
-          />
-        </div>
-        <DialogFooter>
-          <Button 
-            variant="outline" 
-            onClick={() => onOpenChange(false)} 
-            className="rounded-full"
-            disabled={isUpdating}
-          >
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleSave} 
-            className="rounded-full" 
-            disabled={!name.trim() || isUpdating}
-          >
-            {isUpdating ? (
-              <>
-                <Loader className="h-4 w-4 mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save changes"
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ----------------------------------------------------------------------
 // Main Component
-// ----------------------------------------------------------------------
+
 interface ResumeListingWrapperProps {
   cacheKey: string;
 }
@@ -176,7 +91,6 @@ interface ResumeListingWrapperProps {
 export default function ResumeListingWrapper({ cacheKey }: ResumeListingWrapperProps) {
   const router = useRouter();
 
-  const queryClient  = useQueryClient()
   // Fetch resumes
 const { data, isLoading, isError, error, refetch } = useQuery<ApiResponse>({
   queryKey:[cacheKey],
@@ -185,50 +99,13 @@ const { data, isLoading, isError, error, refetch } = useQuery<ApiResponse>({
   console.log(data);
   
 
-  // Track which item is being deleted/updated
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
-
   // Mutation for updating name
-  const { mutateAsync: updateName, isPending: isUpdating } = useMutation({
-    mutationFn: ({ resumeId, name }: { resumeId: string; name: string }) => 
-      updateResumeName({resumeId:resumeId,body:{name:name}}),
-    onSuccess: (data) => {
 
-       refetch()
-      toast.success(data.message);
-      setUpdatingId(null);
-    
-      
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to update name");
-      setUpdatingId(null);
-    },
-  });
-
-  // Mutation for deleting
-  const { mutateAsync: deleteResumeHandler, isPending: isDeleting } = useMutation({
-    mutationFn: (id: string) => deleteResume(id),
-    onSuccess: (data) => {
-       refetch()
-      toast.success(data.message);
-      setDeletingId(null);
-   
-
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to delete resume");
-      setDeletingId(null);
-    },
-  });
 
   // Local state
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "date" | "status">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [editingResume, setEditingResume] = useState<ResumeItem | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const resumes = useMemo(() => data?.data || [], [data]);
 
@@ -270,47 +147,6 @@ const { data, isLoading, isError, error, refetch } = useQuery<ApiResponse>({
     return items;
   }, [resumes, searchQuery, sortBy, sortOrder]);
 
-  // Handlers
-  const handleEditFull = (templateId: string,resumeId:string) => {
-    router.push(`/dashboard/templates/${templateId}/builder/${resumeId}`);
-  };
-
-  const handlePreview = (id: string) => {
-    router.push(`/resume/preview/${id}`);
-  };
-
-  const handleDelete = async (id: string) => {
-    setDeletingId(id);
-   const result =  await deleteResumeHandler(id);
-
-   if(result.successs){
-    queryClient.invalidateQueries({ queryKey: [cacheKey] });
-      
-      // Also refetch to ensure fresh data
-     
-      
-      toast.success(result.message);
-      setDeletingId(null);
-   }
-  };
-
-  const handleOpenNameEdit = (resume: ResumeItem) => {
-    setEditingResume(resume);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleSaveName = async (id: string, newName: string) => {
-    setUpdatingId(id);
-   const result =  await updateName({ resumeId: id, name: newName });
-   
-    if(result.successs){
- queryClient.invalidateQueries({ queryKey: [cacheKey] });
-      
-      toast.success(result.message);
-      setDeletingId(null);
-       setIsEditDialogOpen(false);
-   }
-  };
 
   // Loading skeleton
   if (isLoading) {
@@ -418,8 +254,7 @@ const { data, isLoading, isError, error, refetch } = useQuery<ApiResponse>({
         {/* Table Header */}
         <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b bg-muted/30 text-xs uppercase font-bold tracking-widest text-muted-foreground">
           <div className="col-span-5">Resume</div>
-          <div className="col-span-2">Last Updated</div>
-          <div className="col-span-2">Status</div>
+          <div className="col-span-4">Last Updated</div>
           <div className="col-span-3 text-right">Actions</div>
         </div>
 
@@ -445,140 +280,15 @@ const { data, isLoading, isError, error, refetch } = useQuery<ApiResponse>({
             )}
           </div>
         ) : (
-          filteredAndSorted.map((resume) => {
-            const isThisItemUpdating = updatingId === resume.id;
-            const isThisItemDeleting = deletingId === resume.id;
-            const isLoading = isThisItemUpdating || isThisItemDeleting;
-
-            return (
-              <div
-                key={resume.id}
-                className={`grid grid-cols-12 gap-4 px-6 py-5 items-center border-b border-border/40 last:border-0 hover:bg-muted/20 transition-colors ${
-                  isLoading ? "opacity-60 pointer-events-none" : "cursor-pointer"
-                }`}
-                onClick={() => !isLoading && handleEditFull(resume.id,resume.template.id)}
-              >
-                {/* Name + Template */}
-                <div className="col-span-5 flex items-center gap-3">
-                  <div className="h-10 w-10 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center">
-                    <FileText className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-medium text-card-foreground truncate">
-                      {resume.name || "Untitled Resume"}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      Template {resume.templateId.slice(0, 8)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Date */}
-                <div className="col-span-2 text-sm text-muted-foreground">
-                  {formatDistanceToNow(new Date(resume.createdAt), { addSuffix: true })}
-                </div>
-
-                {/* Status */}
-                <div className="col-span-2">
-                  <Badge
-                    variant={resume.isEdit ? "default" : "secondary"}
-                    className={
-                      resume.isEdit
-                        ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20"
-                        : "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20"
-                    }
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader className="h-3 w-3 mr-1 animate-spin" />
-                        {isThisItemUpdating ? "Updating..." : "Deleting..."}
-                      </>
-                    ) : (
-                      resume.isEdit ? "Editing" : "Saved"
-                    )}
-                  </Badge>
-                </div>
-
-                {/* Actions (click handlers stop propagation) */}
-                <div
-                  className="col-span-3 flex justify-end gap-1"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 rounded-lg"
-                    onClick={() => handleEditFull(resume.templateId,resume.id)}
-                    title="Edit full resume"
-                    disabled={isLoading}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 rounded-lg"
-                    onClick={() => handlePreview(resume.id)}
-                    title="Preview resume"
-                    disabled={isLoading}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 rounded-lg"
-                        disabled={isLoading}
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="rounded-xl">
-                      <DropdownMenuItem 
-                        onClick={() => handleOpenNameEdit(resume)}
-                        disabled={isLoading}
-                      >
-                        {isThisItemUpdating ? (
-                          <>
-                            <Loader className="h-4 w-4 mr-2 animate-spin" />
-                            Updating...
-                          </>
-                        ) : (
-                          <>
-                            <Pencil className="h-4 w-4 mr-2" />
-                            Edit name
-                          </>
-                        )}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onClick={() => handleDelete(resume.id)}
-                        disabled={isLoading}
-                      >
-                        {isThisItemDeleting ? (
-                          <>
-                            <Loader className="h-4 w-4 mr-2 animate-spin" />
-                            Deleting...
-                          </>
-                        ) : (
-                          <>
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </>
-                        )}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            );
+          filteredAndSorted.map((resume) =>{
+            return <ResumeListItem 
+            key={resume.id}
+            resume={resume}
+            cacheKey={cacheKey}
+            />
           })
         )}
-      </div>
+
 
       {/* Footer Stats */}
       {filteredAndSorted.length > 0 && (
@@ -632,15 +342,9 @@ const { data, isLoading, isError, error, refetch } = useQuery<ApiResponse>({
           </Card>
         </div>
       )}
+      
+    </div>
 
-      {/* Name Edit Dialog */}
-      <EditNameDialog
-        resume={editingResume}
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        onSave={handleSaveName}
-        isUpdating={isUpdating}
-      />
     </div>
   );
 }

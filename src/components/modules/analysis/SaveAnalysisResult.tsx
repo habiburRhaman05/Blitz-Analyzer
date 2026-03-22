@@ -21,7 +21,9 @@ const SaveAnalysisResult = ({id}:{id:string}) => {
 
 
     const handleSaveDetails = async ()=>{
-        await mutateAsync({})
+       const result = await mutateAsync({})
+       console.log(result);
+       
     }
 
     
