@@ -55,7 +55,7 @@ export const handleAnalysis = async (formData)=>{
 }
 export const getUserAnalysisHistory = async ()=>{
     const cookieStore = await cookies()
-    const response = await httpClient.post(
+    const response = await httpClient.get(
         `/analyzer/get-analysis-history`, 
         {
           headers: {

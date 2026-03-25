@@ -3,9 +3,11 @@
 import httpClient from "@/lib/axios-client";
 import { serverFetch } from "@/lib/serverFetch"
 import { revalidateTag } from "next/cache";
+import { cookies } from "next/headers";
 
 export const getUserCredit = async ()=>{
  
+    const cookieStore = await cookies()
 
   const res = await httpClient.get("/wallet/my-blance", {
       headers: {

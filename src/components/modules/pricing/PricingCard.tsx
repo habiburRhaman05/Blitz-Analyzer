@@ -98,10 +98,12 @@ export const PricingCard = ({ plan, isPopular = false, index }: PricingCardProps
     }
     const payload = {
       planId,
-      "cancelUrl": `${envVeriables.APP_URL}/payment/cancel`,
-      "successUrl": `${envVeriables.APP_URL}/payment/success`
+      "cancelUrl": `${envVeriables.NEXT_PUBLIC_APP_URL}/payments`,
+      "successUrl": `${envVeriables.NEXT_PUBLIC_APP_URL}/payments`
     }
     const result = await buyCreditMutation.mutateAsync(payload)
+    console.log(result);
+    
     if (result.success) {
       window.location.href = result.data.checkoutUrl
     }

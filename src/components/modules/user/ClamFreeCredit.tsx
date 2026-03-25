@@ -26,16 +26,17 @@ import { CheckCircle2, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner"; // or any toast library
 import httpClient from "@/lib/axios-client";
 import { refreshWallet } from "@/services/credit.services";
+import { handleClaimFreeCredit } from "@/services/user.services";
 
 // ----------------------------------------------------------------------
 // Types for the onboarding form data
 // ----------------------------------------------------------------------
 interface OnboardingData {
-  role: string;              // e.g., "Software Engineer", "Product Manager", etc.
-  experience: string;        // "0-2 years", "3-5 years", etc.
-  goal: string;              // "Get a new job", "Switch career", "Improve resume", etc.
-  biggestChallenge: string;  // text area
-  howDidYouHear: string;     // "Social media", "Friend", "Search", etc.
+  role: string;          
+  experience: string;     
+  goal: string;              
+  biggestChallenge: string; 
+  howDidYouHear: string;  
 }
 
 // ----------------------------------------------------------------------
@@ -183,7 +184,7 @@ export default function ClaimFreeCredits({ userId }: ClaimFreeCreditsProps) {
 try {
       setIsSubmitting(true);
     const payload= {}
-    const result = await httpClient.post("/wallet/claim-free-credit",payload);
+    const result = await handleClaimFreeCredit(payload)
     if(result.data?.success){
       setShowSuccess(true);
       await refreshWallet();

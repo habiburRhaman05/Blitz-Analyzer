@@ -54,6 +54,7 @@ const TemplateDetails = ({ id }: TemplateDetailsProps) => {
 
     }
   )
+console.log(data);
 
   const initlizeResumeMutation = useApiMutation({
     actionName:"initlize-resume",

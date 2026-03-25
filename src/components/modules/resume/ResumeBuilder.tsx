@@ -39,7 +39,7 @@ import { SectionRenderer } from "./builder/ResumeBuilderField";
 import { ResumePreview } from "./ResumePreview";
 import httpClient from "@/lib/axios-client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { updateResumeName } from "@/services/resume.services";
+import { downloadResumeHandler, updateResumeName } from "@/services/resume.services";
 import { getAllTemplateDetailsPublic } from "@/services/admin.services";
 import { useQuery } from "@tanstack/react-query";
 
@@ -74,21 +74,12 @@ const searchParams = useSearchParams();
     }
   )
 
+  console.log(apiResponse);
+  
   const template: any = apiResponse?.data;
   console.log(template);
 
-  const findCurrentResume = (template) =>{
-    console.log(template);
-    
-  //  if(isEditMode){
-     const crr = template.resume?.map((res) => {
-      if(res.id === builderId){
-        return res.resumeData
-      }
-    })
-    return crr[0]
-  //  }
-  }
+
   
 
 
@@ -119,47 +110,15 @@ const searchParams = useSearchParams();
     console.log(crr);
     
 
-    const normalized = normalizeResumeData(sections,  crr[0].resumeData || {});
+    const normalized = normalizeResumeData(sections, crr.length > 0 && crr[0].resumeData ? crr[0].resumeData : {});
     reset(normalized);
     setLastSaved(new Date());
     setCurrentStep(0);
     setReviewMode(false);
   }, [template, reset, sections]);
 
-  const prevDataRef = useRef<any>(null);
-  const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const performAutoSave = useCallback(async (data: any) => {
-    // setIsAutoSaving(true);
-    // await new Promise((resolve) => setTimeout(resolve, 2000));
-    // setLastSaved(new Date());
-    // setIsAutoSaving(false);
-    // toast.success("Progress auto-saved", { id: "auto-save" });
-  }, []);
 
-  // useEffect(() => {
-  //   if (!prevDataRef.current) {
-  //     prevDataRef.current = formData;
-  //     return;
-  //   }
-
-  //   if (!deepEqual(prevDataRef.current, formData)) {
-  //     if (autoSaveTimeoutRef.current) {
-  //       clearTimeout(autoSaveTimeoutRef.current);
-  //     }
-
-  //     autoSaveTimeoutRef.current = setTimeout(() => {
-  //       performAutoSave(formData);
-  //       prevDataRef.current = formData;
-  //     }, 2000);
-  //   }
-
-  //   return () => {
-  //     if (autoSaveTimeoutRef.current) {
-  //       clearTimeout(autoSaveTimeoutRef.current);
-  //     }
-  //   };
-  // }, [formData, performAutoSave]);
 
   const progressPercent = useMemo(() => {
     if (!sections.length) return 0;
@@ -226,7 +185,7 @@ const searchParams = useSearchParams();
     setIsDownloading(true);
     try {
       
-      const result = await (await httpClient.post(`/resume/${builderId}/generate-download`)).data
+    const result = await downloadResumeHandler(builderId)
 console.log(result);
 
       if(result.success){

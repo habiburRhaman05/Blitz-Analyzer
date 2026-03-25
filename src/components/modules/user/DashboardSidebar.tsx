@@ -137,11 +137,7 @@ console.log(isAdmin);
         </SidebarGroup>
 
         {/* Credit Card Widget - Integrated nicely */}
-        {!isCollapsed  && !isAdmin && (
-          <div className="px-2 mt-auto mb-4">
-            <UserCreditCard />
-          </div>
-        )}
+     
       </SidebarContent>
 
       {/* Modern Footer Section */}

@@ -1,116 +1,114 @@
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
-import { getUserCredit } from '@/services/credit.services'
-import { useQuery } from '@tanstack/react-query'
-import { Coins, Wallet, Sparkles, TrendingUp } from 'lucide-react'
-import { motion } from 'framer-motion'
+"use client";
 
-const UserCreditCard = () => {
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Wallet, 
+  Plus, 
+  ArrowUpRight, 
+  Coins, 
+  Sparkles, 
+  ChevronRight,
+  History
+} from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
+import { getUserCredit } from "@/services/credit.services";
+import { cn } from "@/lib/utils";
+
+const CreditWallet = () => {
   const { data, isLoading } = useQuery<{ data: { balance: number } }>({
-    queryKey: ['fetch-user-credit'],
+    queryKey: ["fetch-user-credit"],
     queryFn: getUserCredit,
     refetchOnWindowFocus: true,
-  })
+  });
 
-  // Loading state: subtle skeleton with shimmer
-  if (isLoading) {
-    return (
-      <div className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm p-4">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-12 w-12 rounded-full bg-gray-200 dark:bg-gray-800" />
-          <div className="space-y-2">
-            <Skeleton className="h-3 w-20 bg-gray-200 dark:bg-gray-800" />
-            <Skeleton className="h-6 w-16 bg-gray-200 dark:bg-gray-800" />
-          </div>
-        </div>
-        <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-      </div>
-    )
-  }
-
-  const balance = data?.data?.balance ?? 0
-
-  // Determine status based on balance
-  const getStatus = () => {
-    if (balance <= 0) return { label: 'Empty', variant: 'destructive', icon: null }
-    if (balance < 50) return { label: 'Low', variant: 'warning', icon: null }
-    if (balance < 200) return { label: 'Standard', variant: 'secondary', icon: null }
-    return { label: 'Premium', variant: 'default', icon: <Sparkles className="w-3 h-3 mr-1" /> }
-  }
-
-  const status = getStatus()
-
-  // For a visual progress bar (optional, if we had a limit)
-  // We'll simulate a "limit" of 500 credits for demonstration
-  const creditLimit = 500
-  const progressPercent = Math.min((balance / creditLimit) * 100, 100)
+  const balance = data?.data?.balance ?? 0;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white via-gray-50/80 to-white dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 p-4 shadow-lg shadow-gray-200/50 dark:shadow-black/20 backdrop-blur-sm border border-gray-200/50 dark:border-gray-800/50 transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
-    >
-      {/* Animated gradient border (on hover) */}
-      <div className="absolute inset-0 rounded-2xl p-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+    <Popover>
+      {/* Trigger: The Professional Icon Button */}
+      <PopoverTrigger asChild>
+        <button className="group relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-background transition-all hover:bg-neutral-800 hover:ring-4 hover:ring-primary/10 active:scale-90">
+          <Wallet className="h-5 w-5 text-zinc-400 transition-colors group-hover:text-white" />
+          {balance > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary"></span>
+            </span>
+          )}
+        </button>
+      </PopoverTrigger>
 
-      {/* Background decorative elements */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
-
-      <div className="relative flex items-center justify-between gap-4">
-        {/* Left: Icon & Balance */}
-        <div className="flex items-center gap-4">
-          <motion.div
-            whileHover={{ scale: 1.05, rotate: 2 }}
-            className="relative flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 shadow-inner group-hover:from-primary/30 group-hover:to-primary/10 transition-colors"
-          >
-            <Wallet className="w-6 h-6 text-primary group-hover:scale-110 transition-transform duration-300" />
-            <div className="absolute inset-0 rounded-full bg-primary/20 blur-md opacity-0 group-hover:opacity-50 transition-opacity" />
-          </motion.div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-              Available Credits
-            </p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                {balance.toLocaleString()}
+      {/* Modern SaaS Style Popover Content */}
+      <PopoverContent 
+        align="end" 
+        sideOffset={12} 
+        className="w-80 overflow-hidden rounded-[24px] border border-white/10 bg-background p-0 shadow-2xl backdrop-blur-xl"
+      >
+        <div className="relative p-6">
+          {/* Background Gradient Mesh */}
+          <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/20 blur-[50px]" />
+          
+          <div className="relative space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+                Current Credits
               </span>
-              <Coins className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+             
+            </div>
+
+            {/* Balance Display */}
+            <div className="flex items-baseline gap-2">
+              {isLoading ? (
+                <Skeleton className="h-10 w-24 bg-white/5" />
+              ) : (
+                <h2 className="text-4xl font-black tracking-tighter text-white">
+                  {balance.toLocaleString()}
+                </h2>
+              )}
+              <span className="text-sm font-medium text-zinc-500">Credits</span>
+            </div>
+
+            {/* Quick Stats/Progress (Linear Style) */}
+            <div className="space-y-2">
+               <div className="flex justify-between text-[10px] font-medium text-zinc-500">
+                  <span>Usage Limit</span>
+                  <span>{((balance/1000)*100).toFixed(0)}%</span>
+               </div>
+               <div className="h-1 w-full overflow-hidden rounded-full bg-white/5">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min((balance/1000)*100, 100)}%` }}
+                    className="h-full bg-gradient-to-r from-primary to-blue-500"
+                  />
+               </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-3">
+              <button className="flex h-10 items-center justify-center gap-2 rounded-xl bg-white text-[12px] font-bold text-black transition-transform active:scale-95">
+                <Plus className="h-4 w-4" />
+                Add Credits
+              </button>
+              <button className="flex h-10 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 text-[12px] font-bold text-white transition-colors hover:bg-white/10 active:scale-95">
+                <History className="h-4 w-4" />
+                History
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Right: Status Badge & optional progress */}
-        <div className="flex flex-col items-end gap-2">
-          <Badge
-            variant={status.variant as any}
-            className="rounded-full px-3 py-1 text-xs font-medium shadow-sm flex items-center gap-1 backdrop-blur-sm"
-          >
-            {status.icon}
-            {status.label}
-          </Badge>
+       
+      </PopoverContent>
+    </Popover>
+  );
+};
 
-          {/* Optional progress bar (shows usage up to a soft limit) */}
-          {balance < creditLimit && (
-            <div className="w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${progressPercent}%` }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="h-full rounded-full bg-gradient-to-r from-primary to-primary/70"
-              />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Subtle shine effect on hover */}
-      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
-    </motion.div>
-  )
-}
-
-export default UserCreditCard
+export default CreditWallet;

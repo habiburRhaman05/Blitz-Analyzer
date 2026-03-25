@@ -1,6 +1,7 @@
 "use server"
 import httpClient from "@/lib/axios-client"
 import { getAllCookies } from "./cookies"
+import { cookies } from "next/headers"
 
 export const getAllResumeById = async () =>{
     const result = await httpClient.get(`/resume`,{
@@ -42,4 +43,15 @@ export const deleteResume  = async (resumeId:string) =>{
         return  result.data
     }
     return null
+}
+
+export const downloadResumeHandler = async (builderId) =>{
+       const cookieStore = await cookies()
+
+    const result = await  httpClient.post(`/resume/${builderId}/generate-download`,{},{
+        headers:{
+             "cookie":cookieStore.toString()
+        }
+       })
+return result.data
 }

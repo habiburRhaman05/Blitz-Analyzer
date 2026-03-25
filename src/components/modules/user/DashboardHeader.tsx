@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import UserProfile from "../auth/UserProfilePopup";
 import Logo from "@/components/global/Logo";
 import Link from "next/link";
+import CreditWallet from "./UserCreditCard";
 
 export default function DashboardHeader() {
   const router = useRouter();
@@ -104,7 +105,8 @@ export default function DashboardHeader() {
         
 
           {/* Theme Toggle */}
-          {mounted && (
+        <div className="w-full">
+            {mounted && (
             <Button
               variant="ghost"
               size="icon"
@@ -118,6 +120,14 @@ export default function DashboardHeader() {
               )}
             </Button>
           )}
+        </div>
+          {/* wallet */}
+
+<div className=" w-full">
+  {user &&
+            <CreditWallet  />
+         }
+</div>
 
           {/* User */}
           {user ? (

@@ -14,3 +14,14 @@ headers: {
   return data
 }
 
+
+export const handleClaimFreeCredit = async (payload) =>{{
+    const cookieStore = await cookies()
+
+ const result = await httpClient.post("/wallet/claim-free-credit",payload,{
+  headers: {
+        "cookie": cookieStore.toString()
+      }
+ });
+ return result
+}}

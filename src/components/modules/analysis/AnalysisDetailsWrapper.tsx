@@ -21,7 +21,7 @@ const AnalysisDetailsWrapper = ({ id }: Props) => {
   const {data,isLoading,refetch,isError} = useQuery({queryKey:[cacheKey],queryFn: () =>  getAnalysisDetails(id)})
 
  
-  console.log(data);
+  
   
 
   if (isLoading) {
@@ -39,11 +39,11 @@ const AnalysisDetailsWrapper = ({ id }: Props) => {
   if (!data) {
    return <AnalysisNotFound/>
   }
-
+console.log("data",data);
   return (
     <div className="space-y-6">
    
-        <AnalysisDetails cacheKey={cacheKey} analysisData={data?.data?.data} onRetry={refetch}/>
+        <AnalysisDetails cacheKey={cacheKey} analysisData={data?.data} onRetry={refetch}/>
     </div>
   );
 };

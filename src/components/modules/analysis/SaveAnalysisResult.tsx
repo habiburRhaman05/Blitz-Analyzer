@@ -24,8 +24,8 @@ const SaveAnalysisResult = ({id,cacheKey}:{id:string,cacheKey:string}) => {
     const handleSaveDetails = async ()=>{
        const result = await mutateAsync({})
        if(result.success){
-           console.log(result);
-           alert();
+           
+           
         queryClient.invalidateQueries({queryKey:[cacheKey]})
 
 
