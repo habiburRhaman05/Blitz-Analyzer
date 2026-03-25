@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Search } from 'lucide-react'
 import AdminUsersItems from './UserItemm'
+import { getAllUsers } from '@/services/admin.services'
+import { useQuery } from '@tanstack/react-query'
 
 export default function AdminUsersWrapper() {
   const [page, setPage] = useState(1)
@@ -13,11 +15,13 @@ export default function AdminUsersWrapper() {
 
   const cacheKey = `admin-users-${page}-${search}`
 
-  const { data, isFetching } = useApiQuery(
-    [cacheKey],
-    `/admin/users?page=${page}&limit=10&search=${search}`,
-    'axios'
-  )
+
+      const { data, isLoading, isFetching } = useQuery({
+    queryKey: [cacheKey],
+    queryFn: () => getAllUsers(page,search),
+    staleTime: 1000 * 30,
+  });
+
 
   const users = data?.data || []
   const meta = data?.meta

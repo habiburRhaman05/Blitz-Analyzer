@@ -45,3 +45,23 @@ headers: {
   })
   return data
 }
+export const getAllUsers = async (page,search)=>{
+    const cookieStore = await cookies()
+
+  const {data} = await httpClient.get(`/admin/users?page=${page}&limit=10&search=${search}`,{
+headers: {
+        "cookie": cookieStore.toString()
+      }
+  })
+  return data
+}
+// export const getAllTransactionns = async (page,limit)=>{
+//     const cookieStore = await cookies()
+
+//   const {data} = await httpClient.get(`/payment/get-all-transactions?page=${page}&limit=${limit}`,{
+// headers: {
+//         "cookie": cookieStore.toString()
+//       }
+//   })
+//   return data
+// }

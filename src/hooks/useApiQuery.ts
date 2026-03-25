@@ -2,6 +2,7 @@
 import { ApiResponse } from "@/interfaces/response";
 import httpClient from "@/lib/axios-client";
 import { serverFetch } from "@/lib/serverFetch";
+import { getAllCookies } from "@/services/cookies";
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 
 export function useApiQuery<T>(
@@ -16,11 +17,18 @@ export function useApiQuery<T>(
     queryFn: async () =>  {
 
   
+      const cookies = await getAllCookies()
 
  try {
         if (fetchMethod === "axios") {
           // Client-side Axios
-          const { data } = await httpClient.get(endpoint);
+
+
+          const { data } = await httpClient.get(endpoint,{
+         headers:{
+          "cookie":cookies.toString()
+         }
+          });
           console.log(data);
           
           return data
