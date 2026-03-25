@@ -32,6 +32,8 @@ export default function ManagesPlansWrapper() {
   const [isUpdating, setIsUpdating] = useState(false)
 
   const { data, isFetching, refetch } = useApiQuery<{ data: Plan[] }>(['plans'], '/pricing', 'axios')
+  console.log(data);
+  
   const plans: Plan[] = data?.data || []
 
   // Mutation setup - Note: We pass the ID dynamically in mutateAsync if your hook supports it, 

@@ -24,3 +24,14 @@ export const deleteUser = async (id: string) => {
   })
   return data
 }
+
+export const getAdminDashboardData = async ()=>{
+    const cookieStore = await cookies()
+
+  const {data} = await httpClient.get("/admin/dashboard/insight",{
+headers: {
+        "cookie": cookieStore.toString()
+      }
+  })
+  return data
+}
