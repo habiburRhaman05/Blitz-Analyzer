@@ -7,9 +7,9 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ArrowUpDown, ChevronDown, Search, Edit, Check } from 'lucide-react'
+import { ArrowUpDown, ChevronDown, Search, Edit, Check, Loader2 } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import * as Dialog from '@radix-ui/react-dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 export interface Plan {
   id: string
@@ -29,14 +29,15 @@ export default function ManagesPlansWrapper() {
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
   const [status, setStatus] = useState<'Active' | 'Inactive'>('Active')
+  const [isUpdating, setIsUpdating] = useState(false)
 
-  // --- API Fetch ---
-  const { data, isFetching } = useApiQuery<{ data: Plan[] }>(['plans'], '/pricing', 'axios')
+  const { data, isFetching, refetch } = useApiQuery<{ data: Plan[] }>(['plans'], '/pricing', 'axios')
   const plans: Plan[] = data?.data || []
 
-  // --- Update Mutation ---
+  // Mutation setup - Note: We pass the ID dynamically in mutateAsync if your hook supports it, 
+  // or we ensure editingPlan exists during the call.
   const updatePlanMutation = useApiMutation({
-    endpoint: `/pricing/${editingPlan?.id}`,
+    endpoint: `/pricing/${editingPlan?.id}`, // This updates when editingPlan changes
     actionName: 'update plan',
     actionType: 'SERVER_SIDE',
     method: 'PATCH'
@@ -44,24 +45,33 @@ export default function ManagesPlansWrapper() {
 
   const handleUpdatePlan = async () => {
     if (!editingPlan) return
+    
     const payload = {
       name: editingPlan.name,
       price: editingPlan.price,
       credits: editingPlan.credits,
       isActive: status === 'Active'
     }
+
     try {
+      setIsUpdating(true)
+      
+      // Execute mutation while editingPlan is still in state (so ID is valid)
       const result = await updatePlanMutation.mutateAsync(payload)
-      if(result.success){
-        setEditingPlan(null)
-      setShowSuccess(true)
+      
+      if (result.success) {
+        setEditingPlan(null) // Only close on success
+        setShowSuccess(true)
+        await refetch()
       }
     } catch (err) {
-      console.error(err)
+      console.error("Update failed:", err)
+    } finally {
+      setIsUpdating(false)
     }
   }
 
-  // --- Filter + Sort ---
+  // Filter & Sort Logic
   const filteredPlans = useMemo(() => {
     let items = [...plans]
     if (search) {
@@ -69,37 +79,27 @@ export default function ManagesPlansWrapper() {
       items = items.filter(p => p.name.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q))
     }
     items.sort((a, b) => {
-      if (sortBy === 'name') return order === 'desc' ? b.name.localeCompare(a.name) : a.name.localeCompare(b.name)
-      if (sortBy === 'price') return order === 'desc' ? b.price - a.price : a.price - b.price
-      if (sortBy === 'createdAt') return order === 'desc'
-        ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      return 0
+      const mod = order === 'desc' ? -1 : 1
+      if (sortBy === 'name') return a.name.localeCompare(b.name) * mod
+      if (sortBy === 'price') return (a.price - b.price) * mod
+      return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * mod
     })
     return items
   }, [plans, search, sortBy, order])
 
-  // --- Skeleton Loader ---
-  const SkeletonRow = () => (
-    <div className="grid grid-cols-12 px-6 py-4 gap-2 animate-pulse border-b">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="h-4 bg-muted rounded col-span-2" />
-      ))}
-    </div>
-  )
-
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Manage Plans</h1>
-        <p className="text-muted-foreground text-sm">All your pricing plans and credits</p>
+      <div className="mb-6 flex justify-between items-end">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight uppercase">Manage Plans</h1>
+          <p className="text-muted-foreground text-sm italic">Subscription and Credit Management</p>
+        </div>
       </div>
 
-      {/* Search + Sort */}
+      {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between mb-6">
         <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3 top-3 h-4 w-4" />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             className="pl-9"
             placeholder="Search plans..."
@@ -112,110 +112,106 @@ export default function ManagesPlansWrapper() {
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="gap-2">
               <ArrowUpDown className="h-4 w-4" />
-              Sort: {sortBy} ({order})
-              <ChevronDown className="h-4 w-4" />
+              {sortBy}
             </Button>
           </DropdownMenuTrigger>
-
-          <DropdownMenuContent>
+          <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => setSortBy('name')}>Name</DropdownMenuItem>
             <DropdownMenuItem onClick={() => setSortBy('price')}>Price</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortBy('createdAt')}>Created At</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setOrder(prev => prev === 'desc' ? 'asc' : 'desc')}>Toggle Order</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSortBy('createdAt')}>Date</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
-      {/* Table */}
-      <div className="rounded-2xl border overflow-hidden">
-        {/* Header */}
-        <div className="grid grid-cols-12 px-6 py-4 text-xs font-bold bg-muted items-center">
-          <div className="col-span-3">Name</div>
-          <div className="hidden md:block col-span-2">Credits</div>
-          <div className="hidden md:block col-span-2">Price</div>
+      {/* Table Content */}
+      <div className="rounded-xl border bg-card overflow-hidden">
+        <div className="grid grid-cols-12 px-6 py-4 text-[11px] uppercase font-bold bg-muted/50 border-b">
+          <div className="col-span-4">Plan Name</div>
+          <div className="col-span-2">Credits</div>
+          <div className="col-span-2">Price</div>
           <div className="col-span-2">Status</div>
-          <div className="col-span-2 hidden md:block">Created At</div>
-          <div className="col-span-1 text-right">Actions</div>
+          <div className="col-span-2 text-right">Action</div>
         </div>
 
-        {/* Rows */}
-        {isFetching
-          ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
-          : filteredPlans.map((plan) => (
-              <div
-                key={plan.id}
-                className="grid grid-cols-12 px-6 py-4 border-b items-center gap-2 hover:bg-gray-50 dark:hover:bg-zinc-900 transition"
-              >
-                <div className="col-span-3 font-medium">{plan.name}</div>
-                <div className="hidden md:block col-span-2">{plan.credits}</div>
-                <div className="hidden md:block col-span-2">{plan.currency} {plan.price}</div>
-                <div className="col-span-2">
-                  <Badge className={`rounded-full px-2 py-1 ${plan.isActive ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-                    {plan.isActive ? 'Active' : 'Inactive'}
-                  </Badge>
-                </div>
-                <div className="col-span-2 hidden md:block">{new Date(plan.createdAt).toLocaleDateString()}</div>
-                <div className="col-span-1 text-right">
-                  <Button size="sm" variant="outline" onClick={() => { setEditingPlan(plan); setStatus(plan.isActive ? 'Active' : 'Inactive') }}>
-                    <Edit className="h-4 w-4" /> Edit
-                  </Button>
-                </div>
-              </div>
-            ))}
+        {plans.map((plan) => (
+          <div key={plan.id} className="grid grid-cols-12 px-6 py-4 border-b items-center hover:bg-muted/20 transition">
+            <div className="col-span-4 font-medium">{plan.name}</div>
+            <div className="col-span-2">{plan.credits}</div>
+            <div className="col-span-2">{plan.currency} {plan.price}</div>
+            <div className="col-span-2">
+              <Badge variant={plan.isActive ? "default" : "destructive"}>
+                {plan.isActive ? 'Active' : 'Inactive'}
+              </Badge>
+            </div>
+            <div className="col-span-2 text-right">
+              <Button size="sm" variant="ghost" onClick={() => {
+                setEditingPlan(plan)
+                setStatus(plan.isActive ? 'Active' : 'Inactive')
+              }}>
+                <Edit className="h-4 w-4 mr-1" /> Edit
+              </Button>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Update Modal */}
-      <Dialog.Root open={!!editingPlan} onOpenChange={() => setEditingPlan(null)}>
-        <Dialog.Overlay className="fixed inset-0 bg-black/50" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background rounded-2xl p-6 w-[400px] shadow-lg">
-          <Dialog.Title className="text-lg font-bold mb-4">Edit Plan</Dialog.Title>
-
-          <div className="flex flex-col gap-3">
-            <Input
-              placeholder="Name"
-              value={editingPlan?.name || ''}
-              onChange={(e) => editingPlan && setEditingPlan({ ...editingPlan, name: e.target.value })}
+      {/* --- EDIT MODAL --- */}
+      <Dialog open={!!editingPlan && !isUpdating} onOpenChange={() => setEditingPlan(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit Plan Details</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-4">
+            <Input 
+             
+              value={editingPlan?.name || ''} 
+              onChange={e => setEditingPlan(prev => prev ? {...prev, name: e.target.value} : null)} 
             />
-            <Input
-              type="number"
-              placeholder="Price"
-              value={editingPlan?.price || 0}
-              onChange={(e) => editingPlan && setEditingPlan({ ...editingPlan, price: Number(e.target.value) })}
-            />
-            <Input
-              type="number"
-              placeholder="Credits"
-              value={editingPlan?.credits || 0}
-              onChange={(e) => editingPlan && setEditingPlan({ ...editingPlan, credits: Number(e.target.value) })}
-            />
-
-            <Select value={status} onValueChange={(val: 'Active' | 'Inactive') => setStatus(val)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select Status" />
-              </SelectTrigger>
+            <div className="grid grid-cols-2 gap-4">
+              <Input 
+                type="number" 
+                value={editingPlan?.price || 0} 
+                onChange={e => setEditingPlan(prev => prev ? {...prev, price: Number(e.target.value)} : null)} 
+              />
+              <Input 
+                type="number" 
+                value={editingPlan?.credits || 0} 
+                onChange={e => setEditingPlan(prev => prev ? {...prev, credits: Number(e.target.value)} : null)} 
+              />
+            </div>
+            <Select value={status} onValueChange={(val: any) => setStatus(val)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="Active">Active</SelectItem>
                 <SelectItem value="Inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
-
-            <div className="flex justify-end gap-2 mt-4">
-              <Button variant="outline" onClick={() => setEditingPlan(null)}>Cancel</Button>
-              <Button variant="default" onClick={handleUpdatePlan}>Save</Button>
-            </div>
           </div>
-        </Dialog.Content>
-      </Dialog.Root>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setEditingPlan(null)}>Cancel</Button>
+            <Button onClick={handleUpdatePlan}>Save Changes</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-      {/* Success Modal */}
-      <Dialog.Root open={showSuccess} onOpenChange={() => setShowSuccess(false)}>
-        <Dialog.Overlay className="fixed inset-0 bg-black/50" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background rounded-2xl p-6 w-[300px] shadow-lg text-center">
-          <Check className="mx-auto h-8 w-8 text-green-500 mb-4 animate-bounce" />
-          <p className="font-bold text-lg mb-2">Plan updated successfully!</p>
-          <Button variant="default" onClick={() => setShowSuccess(false)}>Close</Button>
-        </Dialog.Content>
-      </Dialog.Root>
+      {/* --- LOADING POPUP MODAL --- */}
+      <Dialog open={isUpdating}>
+        <DialogContent className="sm:max-w-[300px] text-center p-10 flex flex-col items-center justify-center pointer-events-none">
+          <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
+          <p className="font-bold text-lg">Updating Plan...</p>
+          <p className="text-sm text-muted-foreground">Please wait while we sync data.</p>
+        </DialogContent>
+      </Dialog>
+
+      {/* --- SUCCESS MODAL --- */}
+      <Dialog open={showSuccess} onOpenChange={() => setShowSuccess(false)}>
+        <DialogContent className="sm:max-w-[300px] text-center p-8">
+          <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
+            <Check className="h-6 w-6 text-green-600" />
+          </div>
+          <h2 className="text-xl font-bold">Success!</h2>
+          <p className="text-muted-foreground mb-6">Plan has been updated successfully.</p>
+          <Button className="w-full" onClick={() => setShowSuccess(false)}>Great</Button>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
