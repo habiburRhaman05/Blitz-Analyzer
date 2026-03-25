@@ -35,3 +35,13 @@ headers: {
   })
   return data
 }
+export const getAllTransactionns = async (page,limit)=>{
+    const cookieStore = await cookies()
+
+  const {data} = await httpClient.get(`/payment/get-all-transactions?page=${page}&limit=${limit}`,{
+headers: {
+        "cookie": cookieStore.toString()
+      }
+  })
+  return data
+}

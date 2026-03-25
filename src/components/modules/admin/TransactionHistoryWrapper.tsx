@@ -16,6 +16,8 @@ import {
   Search
 } from 'lucide-react'
 import TransactionHistoryItems from './TransactionHistoryItems'
+import { useQuery } from '@tanstack/react-query'
+import { getAllTransactionns } from '@/services/admin.services'
 
 export type PaymentStatus = 'SUCCESS' | 'FAILED' | 'PENDING'
 
@@ -53,11 +55,17 @@ export default function TransactionHistoryWrapper() {
   const [page, setPage] = useState(1)
   const limit = 5
 
-const { data, isFetching } = useApiQuery<ApiResponse<Transaction[]>>(
-  ['transactions', page.toString()],
-  `/payment/get-all-transactions?page=${page}&limit=${limit}`,
-  'axios'
-)
+// const { data, isFetching } = useApiQuery<ApiResponse<Transaction[]>>(
+//   ['transactions', page.toString()],
+//   `/payment/get-all-transactions?page=${page}&limit=${limit}`,
+//   'axios'
+// )
+
+    const { data, isFetching } = useQuery({
+    queryKey: ['transactions', page.toString()],
+    queryFn: () => getAllTransactionns(page,limit),
+    staleTime: 1000 * 30,
+  });
 
   const meta: PaginationMeta | undefined = data?.data?.data.meta
   const totalPages = meta ? Math.ceil(meta.total / meta.limit) : 1
