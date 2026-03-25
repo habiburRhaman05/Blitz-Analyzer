@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import httpClient from "@/lib/axios-client";
 import { ApiResponse } from "@/interfaces/response";
 import { IBaseUser, IUser } from "@/interfaces/user";
+import { handleAvatarUpload } from "@/services/auth.services";
 
 interface AvatarUploadProps {
   imageUrl?: string | null;
@@ -48,13 +49,7 @@ export function AvatarUpload({ imageUrl, initials, onUpload,refetch }: AvatarUpl
 
     try {
       // Fetching the preview/temp URL from your API
-      const response = await httpClient.post("/upload-media/upload-avatar", formData,{
-        headers:{
-           "Content-Type": "multipart/form-data", // This is crucial
-           
-        },
-        signal:requestAbort.signal
-      });
+      const response =  await handleAvatarUpload(formData)
       
       // Assume the API returns { secure_url: "..." }
       setPreview(response.data.secure_url); 

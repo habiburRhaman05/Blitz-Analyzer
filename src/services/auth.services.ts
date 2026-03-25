@@ -24,16 +24,16 @@ export const getProfile = async (): Promise<{ user: { data: any } } | null> => {
   return { user }
 };
 
-export const getMe = async ()=>{
-try {
-    let data = await serverFetch("/auth/me",{});
-  return data
-} catch (error) {
+export const getMe = async () => {
+  try {
+    let data = await serverFetch("/auth/me", {});
+    return data
+  } catch (error) {
 
-  
-  console.log(error);
-  
-}
+
+    console.log(error);
+
+  }
 }
 
 export const handleLogin = async (loginPayload: signInPayloadType) => {
@@ -43,9 +43,9 @@ export const handleLogin = async (loginPayload: signInPayloadType) => {
 
     const { accessToken, refreshToken, sessionToken, user, message } = res.data.data;
 
-    await setTokenInCookies("accessToken", accessToken,60*60);
-    await setTokenInCookies("better-auth.session_token", sessionToken,60*60);
-    await setTokenInCookies("refreshToken", refreshToken,120*60);
+    await setTokenInCookies("accessToken", accessToken, 60 * 60);
+    await setTokenInCookies("better-auth.session_token", sessionToken, 60 * 60);
+    await setTokenInCookies("refreshToken", refreshToken, 120 * 60);
     //  redirect("/dashboard")
     return {
       success: true,
@@ -112,7 +112,7 @@ export async function refreshTokens(refreshToken: string, apiUrl: string) {
 }
 
 
-export async function  isTokenExpiringSoon(token: string) {
+export async function isTokenExpiringSoon(token: string) {
   try {
     const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
     const exp = payload.exp * 1000;
@@ -122,28 +122,28 @@ export async function  isTokenExpiringSoon(token: string) {
   }
 }
 
-export const changePassword = async (payload) =>{
-      const cookieStore = await cookies()
+export const changePassword = async (payload) => {
+  const cookieStore = await cookies()
 
 
-try {
-      const res = await  httpClient.put("/auth/change-password", payload,{
+  try {
+    const res = await httpClient.put("/auth/change-password", payload, {
       headers: {
-            "cookie": cookieStore.toString()
+        "cookie": cookieStore.toString()
       }
-  });
-  
- if(res.data){
-  return  {success:true,message:res.data.message}
- }
-   
-} catch (err:any) {
-   const message = err.response?.data?.message || err.message || "An error occurred";
+    });
+
+    if (res.data) {
+      return { success: true, message: res.data.message }
+    }
+
+  } catch (err: any) {
+    const message = err.response?.data?.message || err.message || "An error occurred";
     return {
-      success:false,
+      success: false,
       message
     }
-}
+  }
 
 }
 
@@ -153,3 +153,32 @@ export async function getTokens(req: NextRequest) {
   const refreshToken = req.cookies.get('refreshToken')?.value;
   return { accessToken, refreshToken };
 }
+
+export const handleAvatarUpload = async (formData) => {
+  const cookieStore = await cookies()
+  const response = await httpClient.post("/upload-media/upload-avatar", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data", // This is crucial
+      "cookie": cookieStore.toString()
+    },
+  });
+
+  return response
+
+}
+
+export const handleEmailVerification = async ({ email, otp }) => {
+  const cookieStore = await cookies()
+  const result = await httpClient.post("/auth/verify-email", {
+    email,
+    otp,
+  }, {
+    headers: {
+      "cookie": cookieStore.toString()
+    }
+  });
+
+  return result.data
+
+}
+

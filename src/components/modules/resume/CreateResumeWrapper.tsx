@@ -14,6 +14,9 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useApiQuery } from "@/hooks/useApiQuery";
+import { useQuery } from "@tanstack/react-query";
+import { getAllTemplateDetailsPublic, getAllTemplatePublic } from "@/services/admin.services";
+import Link from "next/link";
 
 // --- Types based on your API Response ---
 interface TemplateData {
@@ -49,13 +52,15 @@ export default function CreateResumeWrapper() {
   const [showPremium, setShowPremium] = useState<"all" | "free" | "premium">("all");
 
 
-  // --- API Fetching ---
-  const { data, isFetching } = useApiQuery(
-    ["templates-list"],
-    "/template",
-    "axios",
-    { staleTime: 1000 * 60 * 5 }
-  );
+ 
+
+  const { data,isFetching } = useQuery(
+    {
+      queryKey:["templates-list"],
+      queryFn:()=>getAllTemplatePublic()
+    }
+  )
+
 
   const templates: TemplateData[] | any = data?.data || [];
 
@@ -181,7 +186,12 @@ export default function CreateResumeWrapper() {
                         </Badge>
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end p-6">
-                         <Button className="w-full rounded-full font-bold">Use Template</Button>
+                         <Button className="w-full rounded-full font-bold">
+
+
+                          Use Template
+                         
+                         </Button>
                       </div>
                     </div>
 

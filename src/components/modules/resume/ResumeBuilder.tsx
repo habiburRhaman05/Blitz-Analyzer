@@ -40,6 +40,8 @@ import { ResumePreview } from "./ResumePreview";
 import httpClient from "@/lib/axios-client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { updateResumeName } from "@/services/resume.services";
+import { getAllTemplateDetailsPublic } from "@/services/admin.services";
+import { useQuery } from "@tanstack/react-query";
 
 
 export default function PremiumResumeBuilder({
@@ -53,29 +55,24 @@ export default function PremiumResumeBuilder({
   const headerRef = useRef<HTMLDivElement | null>(null);
 const searchParams = useSearchParams();
   const page_mode = searchParams.get('mode')// e.g., if URL is /page?name=test
-    const isEditMode = page_mode === "edit";
-
   const [currentStep, setCurrentStep] = useState(0);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [reviewMode, setReviewMode] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [sectionValidationMap, setSectionValidationMap] = useState<
     Record<string, { valid: boolean; count: number; fields: string[] }>
   >({});
 
-  const { data: apiResponse, isFetching } = useApiQuery(
-    ["templates", id],
-    `/template/templateDetails/${id}`,
-    "axios",
+  
+  const { data: apiResponse, isFetching } = useQuery(
     {
-      refetchOnWindowFocus: false,
-      staleTime:0
+      queryKey:[`templates-${id}`],
+      queryFn:()=>getAllTemplateDetailsPublic(id)
     }
-  );
+  )
 
   const template: any = apiResponse?.data;
   console.log(template);

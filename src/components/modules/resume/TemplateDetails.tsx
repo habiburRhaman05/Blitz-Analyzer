@@ -35,6 +35,8 @@ import { Separator } from "@/components/ui/separator";
 import { useUser } from '@/context/UserContext';
 import { useApiMutation } from '@/hooks/useApiMutation';
 import { getUserCredit } from '@/services/credit.services';
+import { getAllTemplateDetailsPublic } from '@/services/admin.services';
+import { useQuery } from '@tanstack/react-query';
 
 interface TemplateDetailsProps {
   id: string;
@@ -42,16 +44,16 @@ interface TemplateDetailsProps {
 
 const TemplateDetails = ({ id }: TemplateDetailsProps) => {
   const router = useRouter();
-  // --- State for Credit Logic ---
   const {user} = useUser()
-  const [showConfirm, setShowConfirm] = useState(false);
   const [showLowCreditAlert, setShowLowCreditAlert] = useState(false);
-  const { data, isFetching } = useApiQuery(
-    ["template", id],
-    `/template/templateDetails/${id}`,
-    "axios",
-    { staleTime: 1000 * 60 * 5 }
-  );
+
+  const { data,isFetching } = useQuery(
+    {
+      queryKey:[`templates-${id}`],
+      queryFn:()=>getAllTemplateDetailsPublic(id)
+
+    }
+  )
 
   const initlizeResumeMutation = useApiMutation({
     actionName:"initlize-resume",
@@ -59,20 +61,12 @@ const TemplateDetails = ({ id }: TemplateDetailsProps) => {
     endpoint:"/resume/initlize-resume",
     method:"POST"
   })
-  const checkCredit = useApiMutation({
-    actionName:"initlize-resume",
-    actionType:"SERVER_SIDE",
-    endpoint:"/resume/initlize-resume",
-    method:"POST"
-  })
-
   // --- Handlers ---
   const handleUseTemplateClick =async () => {
     if(user && user.wallet.balance < 10){
   setShowLowCreditAlert(true)
 return
 }
-
    const result = await initlizeResumeMutation.mutateAsync({
     templateId:id
  })

@@ -30,6 +30,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useUser } from '@/context/UserContext';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import AnalysisHistoryItems from './HistoryItems';
+import { useQuery } from '@tanstack/react-query';
+import { getUserAnalysisHistory } from '@/services/analysis.services';
 
 // ----------------------------------------------------------------------
 // Types (based on API response)
@@ -86,17 +88,14 @@ function SkeletonRow() {
 
 export default function AnalysisHistoryWrapper() {
   const { user } = useUser();
-  const router = useRouter();
   const cacheKey = `analysis-history-${user?.id}`;
 
-  const { data, isFetching, isError } = useApiQuery<ApiResponse>(
-    [cacheKey],
-    '/analyzer/get-analysis-history',
-    'axios',{
-      refetchOnWindowFocus:false,
+  const {data, isFetching, isError} = useQuery({
+    queryKey:[cacheKey],
+    queryFn:getUserAnalysisHistory,
+    refetchOnWindowFocus:false,
       staleTime:2*60*1000
-    }
-  );
+  })
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'score'>('date');

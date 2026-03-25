@@ -9,13 +9,13 @@ import { UserRole } from '@/interfaces/enums';
 import { CreditPackage } from '@/interfaces/pricing';
 import { motion } from 'framer-motion';
 import {
-    ArrowRight,
-    Check,
-    Coins,
-    Crown,
-    Loader2,
-    Sparkles,
-    Zap
+  ArrowRight,
+  Check,
+  Coins,
+  Crown,
+  Loader2,
+  Sparkles,
+  Zap
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -79,43 +79,42 @@ const getPlanIcon = (name: string, index: number) => {
 export const PricingCard = ({ plan, isPopular = false, index }: PricingCardProps) => {
   const features = getFeaturesForCredits(plan.credits);
   const icon = getPlanIcon(plan.name, index);
- const router = useRouter();
-  const {user} = useUser();
+  const router = useRouter();
+  const { user } = useUser();
 
 
   const buyCreditMutation = useApiMutation({
-    endpoint:"/payment/buy-credit",
-    actionName:"Buy Credit",
-    actionType:"SERVER_SIDE",
-    method:"POST",
-    
+    endpoint: "/payment/buy-credit",
+    actionName: "Buy Credit",
+    actionType: "SERVER_SIDE",
+    method: "POST",
+
   })
 
-  const handleBuyCredit = async (planId:string) =>{
-     if(!user || user.user.role !== UserRole.USER){
-        toast.error("Please Login First To Buy Credit")
-        router.push("/sign-in")
-     }
-     const payload = {
-        planId,
-       "cancelUrl":"http://localhost:3000/payment/cancel",
-"successUrl":"http://localhost:3000/payment/success",
-     }
-   const result = await buyCreditMutation.mutateAsync(payload)
-   if(result.success){
-    window.location.href = result.data.checkoutUrl
-   }
+  const handleBuyCredit = async (planId: string) => {
+    if (!user || user.user.role !== UserRole.USER) {
+      toast.error("Please Login First To Buy Credit")
+      router.push("/sign-in")
+    }
+    const payload = {
+      planId,
+      "cancelUrl": `${envVeriables.APP_URL}/payment/cancel`,
+      "successUrl": `${envVeriables.APP_URL}/payment/success`
+    }
+    const result = await buyCreditMutation.mutateAsync(payload)
+    if (result.success) {
+      window.location.href = result.data.checkoutUrl
+    }
   }
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className={`relative flex flex-col rounded-3xl border p-8 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 bg-card/50 backdrop-blur-sm ${
-        isPopular
+      className={`relative flex flex-col rounded-3xl border p-8 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 bg-card/50 backdrop-blur-sm ${isPopular
           ? 'border-primary ring-2 ring-primary/20 shadow-xl'
           : 'border-border'
-      }`}
+        }`}
     >
       {isPopular && (
         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
@@ -163,29 +162,28 @@ export const PricingCard = ({ plan, isPopular = false, index }: PricingCardProps
         </div>
       </div>
 
-    <Button
-  variant={isPopular ? 'default' : 'outline'}
-  onClick={() => handleBuyCredit(plan.id)}
-  disabled={buyCreditMutation.isPending}
-  className={`w-full h-12 rounded-full font-bold group relative overflow-hidden transition-all ${
-    isPopular ? 'shadow-lg shadow-primary/20' : ''
-  } ${buyCreditMutation.isPending ? 'cursor-not-allowed opacity-80' : 'active:scale-95'}`}
->
-  {buyCreditMutation.isPending ? (
-    <>
-      <span className="opacity-0">Get {plan.credits} Credits</span>
-      <div className="absolute inset-0 flex items-center justify-center gap-2">
-        <Loader2 className='animate-spin mr-3' />
-        <span>Processing...</span>
-      </div>
-    </>
-  ) : (
-    <>
-      Get {plan.credits} Credits
-      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-    </>
-  )}
-</Button>
+      <Button
+        variant={isPopular ? 'default' : 'outline'}
+        onClick={() => handleBuyCredit(plan.id)}
+        disabled={buyCreditMutation.isPending}
+        className={`w-full h-12 rounded-full font-bold group relative overflow-hidden transition-all ${isPopular ? 'shadow-lg shadow-primary/20' : ''
+          } ${buyCreditMutation.isPending ? 'cursor-not-allowed opacity-80' : 'active:scale-95'}`}
+      >
+        {buyCreditMutation.isPending ? (
+          <>
+            <span className="opacity-0">Get {plan.credits} Credits</span>
+            <div className="absolute inset-0 flex items-center justify-center gap-2">
+              <Loader2 className='animate-spin mr-3' />
+              <span>Processing...</span>
+            </div>
+          </>
+        ) : (
+          <>
+            Get {plan.credits} Credits
+            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          </>
+        )}
+      </Button>
     </motion.div>
   );
 };

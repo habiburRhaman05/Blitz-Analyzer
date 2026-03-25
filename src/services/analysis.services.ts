@@ -24,9 +24,12 @@ export const deleteAnalysis = async (analysisId:string) =>{
 
 
 export const getAnalysisDetails = async (id) =>{
+      const cookieStore = await cookies()
+
    const {data}  = await httpClient.post(`/analyzer/analysis/${id}`,{},{
       headers: {
           "Content-Type": "multipart/form-data",
+          "cookie": cookieStore.toString()
         },
   });
   return data
@@ -50,3 +53,18 @@ export const handleAnalysis = async (formData)=>{
       );
       return response.data
 }
+export const getUserAnalysisHistory = async ()=>{
+    const cookieStore = await cookies()
+    const response = await httpClient.post(
+        `/analyzer/get-analysis-history`, 
+        {
+          headers: {
+        "cookie": cookieStore.toString()
+          },
+        }
+      );
+      return response.data
+}
+
+
+ 

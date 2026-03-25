@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import httpClient from "@/lib/axios-client";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { handleEmailVerification } from "@/services/auth.services";
 
 // ==================
 // Validation Schema
@@ -68,11 +69,8 @@ export default function EmailVerificationUI() {
     setIsLoading(true);
 
     try {
-      const result = await httpClient.post("/auth/verify-email", {
-        email,
-        otp: data.otp,
-      });
-
+      
+ const result = await  handleEmailVerification({email,otp:data.otp})
       if (result.data?.success) {
         setVerified(true);
         toast.success(result.data?.message || "Email verified successfully!");
