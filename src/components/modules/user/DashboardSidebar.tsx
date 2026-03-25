@@ -44,6 +44,7 @@ const NAVIGATION_CONFIG = {
     { path: "/dashboard/templates", label: "Templates", icon: LucideBookTemplate },
     { path: "/dashboard/history", label: "Analysis History", icon: History },
     { path: "/dashboard/profile", label: "Profile", icon: User },
+    { path: "/dashboard/payments", label: "Payments History", icon: User },
     { path: "/dashboard/settings", label: "Settings", icon: Settings },
 
 
