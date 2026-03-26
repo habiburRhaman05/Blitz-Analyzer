@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import DashboardView from './DashboardView'
+import { BackgroundWrapper } from '@/components/global/BackgroudWrapper'
 
 export function HeroSection() {
   // Animation Variants
@@ -25,8 +26,19 @@ export function HeroSection() {
   }
 
   return (
-    <section className="relative w-full overflow-hidden bg-white dark:bg-[#050505] pt-16 md:pt-28 pb-20">
-      
+
+      <section className="relative w-full overflow-hidden bg-background pt-16 md:pt-28 pb-20">
+        <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20 dark:opacity-40">
+        <svg className="absolute top-0 left-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-slate-200 dark:text-slate-800" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+        </svg>
+      </div>
+      <div className="absolute top-1/2 -right-24 w-96 h-96 bg-blue-500/10 blur-[120px] rounded-full" />
       {/* 1. Subtle Animated Background Gradients */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-400/10 dark:bg-blue-600/10 blur-[120px] rounded-full animate-pulse" />
@@ -108,5 +120,6 @@ export function HeroSection() {
         </motion.div>
       </div>
     </section>
+
   )
 }

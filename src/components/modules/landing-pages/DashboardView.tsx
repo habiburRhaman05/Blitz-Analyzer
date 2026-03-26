@@ -112,7 +112,7 @@ const DashboardView = () => {
 
   return (
     /* Removed padding and background to blend with HeroSection */
-    <div className="flex justify-center items-center w-full bg-transparent transition-colors duration-300">
+    <div className="flex justify-center items-center w-full bg-background transition-colors duration-300">
       
       {/* Main Window Container */}
       <div
