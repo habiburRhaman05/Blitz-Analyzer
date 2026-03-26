@@ -27,10 +27,11 @@ import { toast } from "sonner"; // or any toast library
 import httpClient from "@/lib/axios-client";
 import { refreshWallet } from "@/services/credit.services";
 import { handleClaimFreeCredit } from "@/services/user.services";
+import { useMutation } from "@tanstack/react-query";
 
-// ----------------------------------------------------------------------
+
 // Types for the onboarding form data
-// ----------------------------------------------------------------------
+
 interface OnboardingData {
   role: string;          
   experience: string;     
@@ -39,9 +40,9 @@ interface OnboardingData {
   howDidYouHear: string;  
 }
 
-// ----------------------------------------------------------------------
+
 // Step components
-// ----------------------------------------------------------------------
+
 const Step1 = ({ data, updateData }: { data: OnboardingData; updateData: (d: Partial<OnboardingData>) => void }) => (
   <div className="space-y-4 py-4">
     <div className="space-y-2">
@@ -128,9 +129,9 @@ const Step3 = ({ data, updateData }: { data: OnboardingData; updateData: (d: Par
   </div>
 );
 
-// ----------------------------------------------------------------------
+
 // Main component: ClaimFreeCredits
-// ----------------------------------------------------------------------
+
 interface ClaimFreeCreditsProps {
   userId?: string; // callback to update credits in parent
 }
@@ -154,6 +155,11 @@ export default function ClaimFreeCredits({ userId }: ClaimFreeCreditsProps) {
   const updateData = (newData: Partial<OnboardingData>) => {
     setFormData((prev) => ({ ...prev, ...newData }));
   };
+
+  const claimHandler = useMutation({
+    mutationKey:[""],
+    mutationFn:(payload) => handleClaimFreeCredit(payload)
+  })
 
   // Next step
   const nextStep = () => {
@@ -184,7 +190,9 @@ export default function ClaimFreeCredits({ userId }: ClaimFreeCreditsProps) {
 try {
       setIsSubmitting(true);
     const payload= {}
-    const result = await handleClaimFreeCredit(payload)
+    const result = await claimHandler.mutateAsync()
+    console.log(result);
+    
     if(result.data?.success){
       setShowSuccess(true);
       await refreshWallet();

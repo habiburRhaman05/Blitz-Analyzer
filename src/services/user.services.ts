@@ -3,25 +3,43 @@
 import httpClient from "@/lib/axios-client";
 import { cookies } from "next/headers";
 
-export const getUserDashboardData = async ()=>{
-    const cookieStore = await cookies()
+export const getUserDashboardData = async () => {
+  const cookieStore = await cookies()
 
-  const {data} = await httpClient.get("/user/dashboard/kpis",{
-headers: {
-        "cookie": cookieStore.toString()
-      }
+  const { data } = await httpClient.get("/user/dashboard/kpis", {
+    headers: {
+      "cookie": cookieStore.toString()
+    }
   })
   return data
 }
 
 
-export const handleClaimFreeCredit = async (payload) =>{{
+export const handleClaimFreeCredit = async (payload) => {
+
     const cookieStore = await cookies()
 
- const result = await httpClient.post("/wallet/claim-free-credit",payload,{
-  headers: {
-        "cookie": cookieStore.toString()
+    const response = await httpClient.post("/wallet/claim-free-credit", payload, {
+      headers: {
+        "cookie": cookieStore.toString(),
+       timeout:30000
       }
- });
- return result
-}}
+    });
+
+
+     // Create a clean,
+    const cleanResponse = {
+      success: true,
+      data: response.data?.secure_url || response.data?.url || response.data,
+      status: response.status,
+      message: response.data?.message || "Upload successful"
+    };
+    
+    // Verify it's serializable
+    JSON.stringify(cleanResponse);
+    
+    return cleanResponse;
+
+
+  
+}

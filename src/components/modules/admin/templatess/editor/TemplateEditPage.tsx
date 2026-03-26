@@ -42,7 +42,7 @@ export default function TemplateEditPage({id}) {
   const [metadata, setMetadata] = React.useState<TemplateMetadata>({
       name: '',
     slug: '',
-    description: '',
+    descriptions: '',
     previewUrl: '',
     price: 0,
     isPremium: false
@@ -91,7 +91,7 @@ console.log(data?.data);
       setMetadata({
           name: template.name || '',
     slug: template.slug || '',
-    description: '',
+    descriptions: template.descriptions || '',
     previewUrl: template.previewUrl || '',
     price: template.price || 0,
     isPremium: template.isPremiun || false
@@ -118,7 +118,7 @@ console.log(data?.data);
       name: metadata.name,
       slug: metadata.slug,
       descriptions:
-      metadata.description,
+      metadata.descriptions,
       previewUrl: metadata.previewUrl,
       price: metadata.price,
       isPremium: metadata.isPremium,
@@ -136,7 +136,7 @@ console.log(data?.data);
    setMetadata({
           name: result.data.name || '',
     slug: result.data.slug || '',
-    description: '',
+    descriptions: '',
     previewUrl: result.data.previewUrl || '',
     price: result.data.price || 0,
     isPremium: result.data.isPremiun || false
@@ -150,15 +150,7 @@ console.log(data?.data);
     setMockData(generateMockData(newSchema));
   };
 
-  const exportJSON = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(schema, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "resume_template_schema.json");
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-  };
+
 
   if (!isDesktop) {
     return (

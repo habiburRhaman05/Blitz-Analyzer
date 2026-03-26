@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 export interface TemplateMetadata {
   name: string;
   slug: string;
-  description: string;
+  descriptions: any;
   previewUrl: string;
   price: number;
   isPremium: boolean;
@@ -25,14 +25,12 @@ export const TemplateMetadataEditor: React.FC<TemplateMetadataEditorProps> = ({ 
     onChange({ ...metadata, [field]: value });
   };
 
-  const templateData = {
-  whyBest: "Built for ATS readability with a strict single-column structure...",
-  benefits: ["Single-column layout...", "ATS-safe headings..."],
-  targetUser: ["Frontend developers", "Full-stack engineers"]
-};
+  
 
 // Generate a summary for the Textarea
-const generatedDescription = `${templateData.whyBest} Key benefits: ${templateData.benefits.join(', ')}. Ideal for: ${templateData.targetUser.join(', ')}.`;
+const generatedDescription = (metadata:any) =>{
+  return `${metadata.descriptions?.whyBest} Key benefits: ${metadata.descriptions?.benefits.join(', ')}. Ideal for: ${metadata.descriptions?.targetUser.join(', ')}.`
+};
 
   return (
     <div className="space-y-8">
@@ -140,8 +138,8 @@ const generatedDescription = `${templateData.whyBest} Key benefits: ${templateDa
           <div className="space-y-2">
             <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Template Description</label>
             <Textarea 
-              value={metadata.description || generatedDescription}
-              onChange={(e) => handleChange('description', e.target.value)}
+              value={metadata.descriptions?.whyBest ? generatedDescription(metadata) : metadata.descriptions}
+              onChange={(e) => handleChange('descriptions', e.target.value)}
               placeholder="Describe the style and best use cases for this template..."
               rows={4}
             />

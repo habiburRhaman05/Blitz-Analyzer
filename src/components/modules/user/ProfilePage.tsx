@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo, useRef, ChangeEvent } from "react";
+import { useState, useMemo, useRef, ChangeEvent, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Camera, Save, Loader2, Upload, Check } from "lucide-react";
+import { Camera, Save, Loader2, Upload, Check, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,10 +15,11 @@ import { AvatarUpload } from "./ProfileAvatar";
 import httpClient from "@/lib/axios-client";
 import { log } from "handlebars/runtime";
 import { useApiMutation } from "@/hooks/useApiMutation";
+import { handleChangeAvatar } from "@/services/auth.services";
 
-// ----------------------------------------------------------------------
+
 // AvatarUpload Component
-// ----------------------------------------------------------------------
+
 interface AvatarUploadProps {
   imageUrl?: string | null;
   initials: string;
@@ -27,11 +28,11 @@ interface AvatarUploadProps {
 
 
 
-// ----------------------------------------------------------------------
+
 // Main AccountPage Component
-// ----------------------------------------------------------------------
+
 export default function AccountPage() {
-  const { user, isLoading ,fetchUser,setUser} = useUser();
+  const { user, isLoading ,refetch,setUser} = useUser();
 
 
   // Initial form state from user data
@@ -83,20 +84,26 @@ export default function AccountPage() {
    
    if(result?.success){
     setUser(result.data)
-    // setForm({
-    //    name:   result.user?.name || user?.name,
-    //   email:   result.user?.email || user?.email,
-    //   profession:   result.user?.profession ||user?.profession,
-    //   experienceLevel:   result.user?.experienceLevel || user?.experienceLevel,
-    //   location:   result.user?.location || user?.location,
-    //   contactNumber:   result.user?.contactNumber || user?.contactNumber,
-    // })
-
     toast.success("Profile updated successfully!");
    }
     
     // In a real app you would update the context with new values
   };
+
+
+  useEffect(()=>{
+    if(user){
+      setForm({
+             name: user?.name || "",
+      email: user?.email || "",
+      profession: user?.profession || "",
+      experienceLevel: user?.experienceLevel || "",
+      location: user?.location || "",
+      contactNumber: user?.contactNumber || "",
+      })
+    }
+  },[user,isLoading])
+  
 
   if (isLoading) {
     return (
@@ -141,19 +148,21 @@ export default function AccountPage() {
         <p className="mt-1 text-muted-foreground">Manage your personal information and preferences</p>
       </motion.div>
 
+<img src={user?.profileAvatar} alt="" className="hidden" />
+   {user?.profileAvatar && 
    <AvatarUpload
-   refetch={fetchUser}
-  imageUrl={user?.profileAvatar || initials}
+   refetch={refetch}
+  imageUrl={user?.profileAvatar}
   initials={user?.name?.charAt(0) || "U"}
   
   onUpload={async (uploadedUrl) => {
     // Replace with actual API call
-     const response = await httpClient.put("/auth/change-avatar", {"profileAvatar":uploadedUrl});
+     const response = await handleChangeAvatar(uploadedUrl);
     return response.data
    
-  
   }}
 />
+   }
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

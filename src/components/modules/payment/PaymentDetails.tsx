@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getPaymentDetails } from '@/services/payment.services';
 import { useQuery } from '@tanstack/react-query';
+import Link from "next/link";
 
 const PaymentDetails = ({ id }: { id: string }) => {
   const { data, isLoading, isError } = useQuery({
@@ -97,9 +98,9 @@ const PaymentDetails = ({ id }: { id: string }) => {
             asChild
             className="w-full h-11 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 font-medium"
           >
-            <a href={payment.invoiceUrl} target="_blank" rel="noreferrer">
+            <Link href={payment.invoiceUrl} target="_blank" rel="noreferrer">
               <Download className="mr-2 h-4 w-4" /> Download PDF Receipt
-            </a>
+            </Link>
           </Button>
         </div>
       </motion.div>

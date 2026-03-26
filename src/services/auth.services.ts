@@ -25,15 +25,13 @@ export const getProfile = async (): Promise<{ user: { data: any } } | null> => {
 };
 
 export const getMe = async () => {
-  try {
-    let data = await serverFetch("/auth/me", {});
-    return data
-  } catch (error) {
-
-
-    console.log(error);
-
-  }
+      const cookieStore = await cookies()
+ const res = await httpClient.get("/auth/me",{
+  headers: {
+        "cookie": cookieStore.toString()
+      }
+ });
+ return res.data
 }
 
 export const handleLogin = async (loginPayload: signInPayloadType) => {
@@ -154,19 +152,42 @@ export async function getTokens(req: NextRequest) {
   return { accessToken, refreshToken };
 }
 
-export const handleAvatarUpload = async (formData) => {
-  const cookieStore = await cookies()
-  const response = await httpClient.post("/upload-media/upload-avatar", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data", // This is crucial
-      "cookie": cookieStore.toString()
-    },
-  });
 
-  return response
-
-}
-
+export const handleAvatarUpload = async (formData: FormData) => {
+  try {
+    const cookieStore = await cookies();
+    
+    const response = await httpClient.post("/upload-media/upload-avatar", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        "cookie": cookieStore.toString()
+      },
+    });
+    
+    // Create a clean,
+    const cleanResponse = {
+      success: true,
+      data: response.data?.secure_url || response.data?.url || response.data,
+      status: response.status,
+      message: response.data?.message || "Upload successful"
+    };
+    
+    // Verify it's serializable
+    JSON.stringify(cleanResponse);
+    
+    return cleanResponse;
+  } catch (error: any) {
+    console.error("Upload error:", error);
+    
+    // Return a clean error object
+    return {
+      success: false,
+      data: null,
+      status: error.response?.status || 500,
+      message: error.response?.data?.message || "Upload failed"
+    };
+  }
+};
 export const handleEmailVerification = async ({ email, otp }) => {
   const cookieStore = await cookies()
   const result = await httpClient.post("/auth/verify-email", {
@@ -182,3 +203,15 @@ export const handleEmailVerification = async ({ email, otp }) => {
 
 }
 
+
+
+export const handleChangeAvatar = async (uploadedUrl) =>{
+    const cookieStore = await cookies();
+
+ const {data} = await httpClient.put("/auth/change-avatar", {"profileAvatar":uploadedUrl},{
+  headers:{
+     "cookie": cookieStore.toString()
+  }
+ })
+ return data
+}

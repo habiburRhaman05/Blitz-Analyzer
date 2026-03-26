@@ -19,6 +19,7 @@ import UserProfile from "../auth/UserProfilePopup";
 import Logo from "@/components/global/Logo";
 import Link from "next/link";
 import CreditWallet from "./UserCreditCard";
+import { UserRole } from "@/interfaces/enums";
 
 export default function DashboardHeader() {
   const router = useRouter();
@@ -124,7 +125,7 @@ export default function DashboardHeader() {
           {/* wallet */}
 
 <div className=" w-full">
-  {user &&
+  {user && user.user.role === UserRole.USER &&
             <CreditWallet  />
          }
 </div>

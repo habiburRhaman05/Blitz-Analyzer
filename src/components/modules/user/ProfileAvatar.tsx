@@ -50,9 +50,7 @@ export function AvatarUpload({ imageUrl, initials, onUpload,refetch }: AvatarUpl
     try {
       // Fetching the preview/temp URL from your API
       const response =  await handleAvatarUpload(formData)
-      
-      // Assume the API returns { secure_url: "..." }
-      setPreview(response.data.secure_url); 
+      setPreview(response.data.data.secure_url); 
       setStatus("preview_ready");
     } catch (error) {
       toast.error("Failed to process image");

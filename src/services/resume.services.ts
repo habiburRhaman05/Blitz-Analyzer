@@ -50,8 +50,11 @@ export const downloadResumeHandler = async (builderId) =>{
 
     const result = await  httpClient.post(`/resume/${builderId}/generate-download`,{},{
         headers:{
-             "cookie":cookieStore.toString()
+             "cookie":cookieStore.toString(),
+               timeout: 30000, // 30 seconds
         }
        })
+    
+       
 return result.data
 }

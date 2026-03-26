@@ -473,7 +473,11 @@ export const FieldRenderer = ({
             <Calendar
               mode="single"
               selected={currentValue ? new Date(currentValue) : undefined}
-              onSelect={(date) => handleChange(date?.toISOString())}
+              onSelect={(date) => handleChange(date?.toLocaleDateString("en-US",{
+                day:"numeric",
+                year:"numeric",
+                month:"long"
+              }))}
             />
           </PopoverContent>
         </Popover>

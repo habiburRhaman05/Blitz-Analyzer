@@ -37,36 +37,10 @@ console.log(`🌐 FETCH: ${path}`);
         },
         credentials: "include",
         cache:"no-cache",
-    //    next: { 
-    //         revalidate: revalidate,
-    //         tags: [path] // Useful for on-demand revalidation later
-    //     }
     })
 
 const cacheStatus = res.headers.get('x-nextjs-cache');
     console.log(`🌐 FETCH: ${path} | Cache: ${cacheStatus || 'N/A'}`);
-
-
-
-    // fallback: if 401, try refresh once and retry
-    if (res.status === 401) {
-
-    // const refreshTokenSuccess = refreshAccessToken()
-
-    //    if(refreshTokenSuccess){
-    //      res = await fetch(`${envVeriables.API_URL}${path}`, {
-    //         ...options,
-    //         headers: {
-    //             ...((options && options.headers) || {}),
-    //             cookie: cookieStore.toString()
-    //         },
-    //         credentials: "include",
-    //         cache: "no-store",
-    //     })
-    //    }else{
-    //     // throw error
-    //    }
-    }
 
     const data = await res.json()
 

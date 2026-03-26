@@ -33,7 +33,7 @@ export default function Editor() {
     // isPremium: false
       name: '',
     slug: '',
-    description: '',
+    descriptions: '',
     previewUrl: '',
     price: 0,
     isPremium: false
@@ -67,7 +67,7 @@ export default function Editor() {
       name: metadata.name,
       slug: metadata.slug,
       descriptions:
-      metadata.description,
+      metadata.descriptions,
       previewUrl: metadata.previewUrl,
       price: metadata.price,
       isPremium: metadata.isPremium,
@@ -83,7 +83,7 @@ export default function Editor() {
       setMetadata({
             name: '',
     slug: '',
-    description: '',
+    descriptions: '',
     previewUrl: '',
     price: 0,
     isPremium: false

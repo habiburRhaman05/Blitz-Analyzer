@@ -23,12 +23,10 @@ interface FormValues {
 }
 
 // -------------------- COMPONENT --------------------
-export default function AccountPage() {
-  const { user, isLoading, fetchUser, setUser } = useUser();
+export default function AdminProfilePage() {
+  const { user, isLoading, refetch, setUser } = useUser();
 
 
-
-  // -------------------- RHF --------------------
   const {
     register,
     handleSubmit,
@@ -42,6 +40,15 @@ export default function AccountPage() {
       contactNumber: "",
     },
   });
+
+  // update data api handler
+    const saveChangeMutation = useApiMutation({
+    endpoint:"/auth/update-profile",
+    actionName:"save changes - update profile",
+    actionType:"SERVER_SIDE",
+    method:"PUT"
+  })
+
 
   // Sync user data to form
   useEffect(() => {
@@ -74,7 +81,7 @@ export default function AccountPage() {
       if (result?.success) {
           console.log(result);
         setUser(result.data);
-        // toast.success("Profile updated successfully!");
+       await  refetch()
       }
     } catch (err) {
       console.error(err);
@@ -121,8 +128,8 @@ export default function AccountPage() {
       {/* Avatar */}
       <div className="mt-5">
         <AvatarUpload
-          refetch={fetchUser}
-          imageUrl={user?.profileAvatar || initials}
+          refetch={refetch}
+          imageUrl={user?.profileAvatar  || initials}
           initials={user?.name?.charAt(0) || "U"}
           onUpload={async (uploadedUrl) => {
             const res = await httpClient.put("/auth/change-avatar", {

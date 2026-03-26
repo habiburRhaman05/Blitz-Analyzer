@@ -20,6 +20,7 @@ import {
   Download,
   Cloud,
   CloudOff,
+  MonitorOff,
 } from "lucide-react";
 import Handlebars from "handlebars";
 import { toast } from "sonner";
@@ -42,6 +43,8 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { downloadResumeHandler, updateResumeName } from "@/services/resume.services";
 import { getAllTemplateDetailsPublic } from "@/services/admin.services";
 import { useQuery } from "@tanstack/react-query";
+import { useApiMutation } from "@/hooks/useApiMutation";
+import { useUser } from "@/context/UserContext";
 
 
 export default function PremiumResumeBuilder({
@@ -67,6 +70,8 @@ const searchParams = useSearchParams();
   >({});
 
   
+  const {user} = useUser();
+  
   const { data: apiResponse, isFetching } = useQuery(
     {
       queryKey:[`templates-${id}`],
@@ -74,7 +79,7 @@ const searchParams = useSearchParams();
     }
   )
 
-  console.log(apiResponse);
+
   
   const template: any = apiResponse?.data;
   console.log(template);
@@ -118,7 +123,17 @@ const searchParams = useSearchParams();
   }, [template, reset, sections]);
 
 
+  const [isDesktop, setIsDesktop] = React.useState(true);
 
+  // Check for desktop device
+  React.useEffect(() => {
+    const checkDevice = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
+    return () => window.removeEventListener('resize', checkDevice);
+  }, []);
 
   const progressPercent = useMemo(() => {
     if (!sections.length) return 0;
@@ -179,14 +194,23 @@ const searchParams = useSearchParams();
   };
   
 
+
+
   const handleGenerateResume = async () => {
     if (!template?.htmlLayout) return;
 
     setIsDownloading(true);
+
+   if(user?.wallet?.balance as number < 10){
+    toast.error("no banlace")
+    setIsDownloading(false)
+ return 
+   }
+
     try {
       
     const result = await downloadResumeHandler(builderId)
-console.log(result);
+
 
       if(result.success){
         console.log(result.data);
@@ -253,6 +277,21 @@ console.log(result);
 
   const activeSection = sections[currentStep];
 
+    if (!isDesktop) {
+    return (
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-background p-6 text-center">
+        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10 text-primary">
+          <MonitorOff className="h-10 w-10" />
+        </div>
+        <h1 className="mb-2 text-2xl font-black uppercase tracking-tight text-foreground">Desktop Required</h1>
+        <p className="max-w-md text-muted-foreground">
+          The Template Builder is a professional tool designed for large screens. 
+          Please switch to a desktop or laptop device to continue designing.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-zinc-50 dark:bg-zinc-950 flex flex-col h-screen overflow-hidden">
       <div
@@ -288,23 +327,7 @@ console.log(result);
             {showMobilePreview ? "Hide" : "Preview"}
           </Button>
 
-          {/* <div className="flex items-center gap-2 text-xs text-zinc-500">
-            {isAutoSaving ? (
-              <>
-                <Loader2 className="h-3 w-3 animate-spin" />
-                <span>Saving...</span>
-              </>
-            ) : lastSaved ? (
-              <>
-                <Cloud className="h-3 w-3" />
-                <span className="hidden sm:inline">
-                  Saved {format(lastSaved, "HH:mm")}
-                </span>
-              </>
-            ) : (
-              <CloudOff className="h-3 w-3" />
-            )}
-          </div> */}
+         
 
         {page_mode === "edit" &&   <Button
                     type="submit"
