@@ -13,14 +13,12 @@ import { TestimonialsSection } from '@/components/modules/landing-pages/testimon
 export default function Home() {
   return (
     <main className="w-full bg-white dark:bg-background text-gray-900 dark:text-white">
-     <PublicHeader/>
       <HeroSection />
       <TestimonialsSection />
       <ProductHighlight/>
       <ResumeFeaturesSection />
       <CareersSection />
       <FAQSection/>
-      <Footer/>
     </main>
   )
 }
