@@ -7,15 +7,15 @@ import { UserRole } from './interfaces/enums';
 
 const AUTH_ROUTES = ['/sign-in', '/sign-up'];
 const PUBLIC_ROUTES = ['/', '/about-us', '/verify-email'];
-const PUBLIC_DYNAMIC_PREFIXES = ['/doctors'];
+
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
   const isPublicRoute =
-    PUBLIC_ROUTES.includes(pathname) ||
-    PUBLIC_DYNAMIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+    PUBLIC_ROUTES.includes(pathname)
+   
 
   // Public routes are always allowed
   if (isPublicRoute) {
