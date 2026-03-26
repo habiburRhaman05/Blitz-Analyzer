@@ -1,5 +1,5 @@
 import EmailVerificationUI from "@/components/modules/auth/EmailVerification";
-import React from "react";
+import React, { Suspense } from "react";
 
 const VerifyEmailPage = ( ) => {
   
@@ -7,7 +7,9 @@ const VerifyEmailPage = ( ) => {
   return (
     <div>
         
-      <EmailVerificationUI />
+   <Suspense>
+       <EmailVerificationUI />
+   </Suspense>
     </div>
   );
 };
