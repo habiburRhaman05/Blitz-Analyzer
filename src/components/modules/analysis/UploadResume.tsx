@@ -133,7 +133,7 @@ const handleSubmit = async () => {
       console.log(result);
       toast.success("starting")
       // // Redirect to the processing or results page using the ID from backend
-      router.push(`/analysis/${result?.data?.analysisId || result?.analysisId}`);
+      router.push(`/analysis/${result?.data?.analysisId || result?.analysisId}?type=new`);
       
     } catch (error: any) {
       // 6. Handle Errors

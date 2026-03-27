@@ -32,6 +32,7 @@ import { useApiQuery } from '@/hooks/useApiQuery';
 import AnalysisHistoryItems from './HistoryItems';
 import { useQuery } from '@tanstack/react-query';
 import { getUserAnalysisHistory } from '@/services/analysis.services';
+import Link from 'next/link';
 
 // ----------------------------------------------------------------------
 // Types (based on API response)
@@ -178,9 +179,14 @@ export default function AnalysisHistoryWrapper() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 md:py-10">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="font-display text-2xl font-bold tracking-tight">Analysis History</h1>
+      <div className="mb-8 flex  justify-between">
+       <div>
+         <h1 className="font-display text-2xl font-bold tracking-tight">Analysis History</h1>
         <p className="mt-1 text-muted-foreground">View and manage your resume analysis reports</p>
+       </div>
+       <Button>
+        <Link href={'/analysis'}>New Analysis</Link>
+       </Button>
       </div>
 
       {/* Search & Sort Bar */}

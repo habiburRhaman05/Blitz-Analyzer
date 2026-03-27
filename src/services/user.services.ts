@@ -16,17 +16,13 @@ export const getUserDashboardData = async () => {
 
 
 export const handleClaimFreeCredit = async (payload) => {
-
     const cookieStore = await cookies()
-
     const response = await httpClient.post("/wallet/claim-free-credit", payload, {
       headers: {
         "cookie": cookieStore.toString(),
        timeout:30000
       }
     });
-
-
      // Create a clean,
     const cleanResponse = {
       success: true,
@@ -34,12 +30,7 @@ export const handleClaimFreeCredit = async (payload) => {
       status: response.status,
       message: response.data?.message || "Upload successful"
     };
-    
     // Verify it's serializable
     JSON.stringify(cleanResponse);
-    
     return cleanResponse;
-
-
-  
 }

@@ -42,8 +42,8 @@ export default function DashboardHeader() {
   }, []);
 
   const navLinks = [
-    { label: "Dashboard", path: "/profile" },
-    { label: "Upload", path: "/upload" },
+    { label: "Home", path: "/" },
+    { label: "Analysis", path: "/analysis" },
     { label: "Pricing", path: "/pricing" },
   ];
 
@@ -143,27 +143,6 @@ export default function DashboardHeader() {
         </div>
       </div>
 
-      {/* 📱 Mobile Bottom Nav */}
-      <div className="md:hidden border-t border-border/50 flex justify-around py-2 bg-background/80 backdrop-blur">
-        {navLinks.map((link) => {
-          const active = pathname === link.path;
-
-          return (
-            <button
-              key={link.path}
-              onClick={() => router.push(link.path)}
-              className={cn(
-                "text-xs font-medium px-3 py-1 rounded-md",
-                active
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground"
-              )}
-            >
-              {link.label}
-            </button>
-          );
-        })}
-      </div>
     </header>
   );
 }

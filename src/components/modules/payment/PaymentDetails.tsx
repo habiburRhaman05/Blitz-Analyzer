@@ -22,7 +22,7 @@ const PaymentDetails = ({ id }: { id: string }) => {
     queryKey: [`fetch-payment-details-${id}`],
     queryFn: () => getPaymentDetails(id),
   });
-
+  console.log("[paymenterror",data);
   if (isLoading) return <LoadingState />;
   if (isError || !data?.success) return <ErrorState />;
 
@@ -98,7 +98,7 @@ const PaymentDetails = ({ id }: { id: string }) => {
             asChild
             className="w-full h-11 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 font-medium"
           >
-            <Link href={payment.invoiceUrl} target="_blank" rel="noreferrer">
+            <Link href={payment.invoiceUrl || ""} target="_blank" rel="noreferrer">
               <Download className="mr-2 h-4 w-4" /> Download PDF Receipt
             </Link>
           </Button>
