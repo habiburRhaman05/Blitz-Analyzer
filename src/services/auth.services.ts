@@ -8,21 +8,8 @@ import { deleteCookie } from "@/lib/cookie";
 import { serverFetch } from "@/lib/serverFetch";
 import { NextRequest } from "next/server";
 import { signInPayloadType } from "@/interfaces/auth.type";
+import { revalidatePath } from "next/cache";
 
-export const getProfile = async (): Promise<{ user: { data: any } } | null> => {
-  const cookieStore = await cookies();
-  const res = await fetch(`${envVeriables.NEXT_PUBLIC_API_URL}/auth/me`, {
-    headers: {
-      cookie: cookieStore.toString(),
-    },
-    cache: "no-store",
-    credentials: "include",
-  });
-  console.log("cookies", cookieStore.toString());
-  if (!res.ok) return null;
-  const user = await res.json()
-  return { user }
-};
 
 export const getMe = async () => {
       const cookieStore = await cookies()
@@ -33,6 +20,15 @@ export const getMe = async () => {
  });
  return res.data
 }
+
+export const revalidateProfileData = async (path="/dashboard/profile") =>{
+  console.log("re-start");
+  
+  await revalidatePath(path)
+  console.log("re-end");
+
+}
+
 
 export const handleLogin = async (loginPayload: signInPayloadType) => {
   try {
@@ -188,6 +184,20 @@ export const handleAvatarUpload = async (formData: FormData) => {
     };
   }
 };
+export const handleProfileUpdate = async (payload) => {
+
+    const cookieStore = await cookies();
+    
+    const response = await httpClient.put("/auth/update-profile", payload, {
+      headers: {
+        "cookie": cookieStore.toString()
+      },
+    });
+    
+    return response.data
+
+    
+};
 export const handleEmailVerification = async ({ email, otp }) => {
   const cookieStore = await cookies()
   const result = await httpClient.post("/auth/verify-email", {
@@ -206,7 +216,8 @@ export const handleEmailVerification = async ({ email, otp }) => {
 
 
 export const handleChangeAvatar = async (uploadedUrl) =>{
-    const cookieStore = await cookies();
+ try {
+     const cookieStore = await cookies();
 
  const {data} = await httpClient.put("/auth/change-avatar", {"profileAvatar":uploadedUrl},{
   headers:{
@@ -214,4 +225,8 @@ export const handleChangeAvatar = async (uploadedUrl) =>{
   }
  })
  return data
+ } catch (error) {
+console.log("error",error);
+
+ }
 }

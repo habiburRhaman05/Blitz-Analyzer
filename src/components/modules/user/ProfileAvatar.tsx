@@ -10,18 +10,17 @@ import { motion } from "framer-motion";
 import httpClient from "@/lib/axios-client";
 import { ApiResponse } from "@/interfaces/response";
 import { IBaseUser, IUser } from "@/interfaces/user";
-import { handleAvatarUpload } from "@/services/auth.services";
+import { handleAvatarUpload, handleChangeAvatar } from "@/services/auth.services";
 
 interface AvatarUploadProps {
   imageUrl?: string | null;
   initials: string;
-  onUpload: (uploadedUrl: string) => Promise<ApiResponse<IBaseUser>>;
   refetch:any
 }
 
 type Status = "idle" | "generating_preview" | "preview_ready" | "uploading" | "success";
 
-export function AvatarUpload({ imageUrl, initials, onUpload,refetch }: AvatarUploadProps) {
+export function AvatarUpload({ imageUrl, initials,refetch }: AvatarUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [preview, setPreview] = useState<string | null>(null);
@@ -59,25 +58,24 @@ export function AvatarUpload({ imageUrl, initials, onUpload,refetch }: AvatarUpl
   };
 
   // 2. CONFIRM: Finalize the upload
-  const handleConfirm = async () => {
+ const handleConfirm = async () => {
     if (!file) return;
     setStatus("uploading");
+     const savedResult = await handleChangeAvatar(preview as string);
+    console.log(savedResult);
+    if(savedResult?.success){
+      toast.success("Your Profile Updated Successfully")
+      setPreview("success")
+    setStatus("success");
 
-    try {
-     const savedResult = await onUpload(preview as string);
-       if(savedResult.success){
-        console.log(savedResult);
-        
-         setStatus("success");
-         setProfileImage(savedResult.data?.image!)
-      toast.success("Profile picture updated");
-      setTimeout(reset, 2000); // Close modal after 2 seconds
-       }else{
-      toast.error("Failed to save profileAvatar");
-       }
-    } catch (error) {
-           toast.error("Failed to save profileAvatar");
-      setStatus("preview_ready");
+ setProfileImage(savedResult.data?.image!)
+ setTimeout(() => {
+    setStatus("idle");
+ }, 2000);
+
+    }else{
+      toast.success("Failed Your Updated Profile")
+    setStatus("idle");
     }
   };
 

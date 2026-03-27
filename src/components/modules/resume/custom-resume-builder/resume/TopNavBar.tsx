@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { SaveStatus } from '@/interfaces/custom-resume-builder';
+import { useResumeEditor } from '@/hooks/useResumeEditor';
 
 interface TopNavBarProps {
   saveStatus: SaveStatus;
@@ -15,13 +16,12 @@ interface TopNavBarProps {
 }
 
 export function TopNavBar({ saveStatus, documentTitle }: TopNavBarProps) {
+    const {handlePdfDownload} = useResumeEditor()
   return (
     <header className="h-14 border-b border-border bg-card flex items-center px-5 shrink-0">
       {/* Left: Logo + doc title */}
       <div className="flex items-center gap-3">
-        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-          <span className="text-primary-foreground font-bold text-sm">R</span>
-        </div>
+      
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-foreground">{documentTitle}</span>
           <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
@@ -69,7 +69,7 @@ export function TopNavBar({ saveStatus, documentTitle }: TopNavBarProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => window.print()}>Export as PDF</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handlePdfDownload()}>Export as PDF</DropdownMenuItem>
             <DropdownMenuItem>Export as DOCX</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Export as JSON</DropdownMenuItem>

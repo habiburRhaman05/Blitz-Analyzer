@@ -33,7 +33,7 @@ const Index = () => {
 
   return (
     <>
-      <MobileBlocker />
+      {/* <MobileBlocker /> */}
       {customStyleEl}
       <div className="hidden lg:flex flex-col h-screen w-full overflow-hidden bg-background">
         <TopNavBar

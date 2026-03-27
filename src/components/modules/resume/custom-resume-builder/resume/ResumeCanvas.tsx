@@ -2,6 +2,7 @@ import type { Editor } from '@tiptap/react';
 import type { ResumeData, StyleSettings } from '@/interfaces/custom-resume-builder';
 import { SectionEditor } from './SectionEditor';
 import { Mail, Phone, Globe } from 'lucide-react';
+import { useResumeEditor } from '@/hooks/useResumeEditor';
 
 interface ResumeCanvasProps {
   data: ResumeData;
@@ -30,8 +31,10 @@ export function ResumeCanvas({
 }: ResumeCanvasProps) {
   const sections = [...data.sections].sort((a, b) => a.position - b.position);
 
+
+
   return (
-    <div className="flex-1 overflow-auto bg-canvas-bg flex justify-center py-8 px-4">
+    <div className="flex-1 overflow-auto bg-canvas-bg flex justify-center py-8 px-4 " id='resume-canvas'>
       <div
         className="resume-print-area bg-canvas-paper shadow-[0_1px_3px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,0,0,0.04)] rounded origin-top"
         style={{

@@ -27,7 +27,55 @@ const defaultStyles: StyleSettings = {
 };
 
 export function useResumeEditor() {
-  const [data, setData] = useState<ResumeData | null>(null);
+  const [data, setData] = useState<ResumeData | null>({
+    "id": "resume-habib-001",
+    "name": "Habib",
+    "title": "Full-Stack Software Engineer & System Architect",
+    "contacts": {
+        "email": "habib@example.com",
+        "phone": "+880-XXXXXXXXXX",
+        "location": "Bangladesh",
+        "linkedin": "linkedin.com/in/habibur-rahman-235462269",
+        "github": "github.com/habiburRhaman05"
+    },
+    "sections": [
+        {
+            "id": "sec-summary",
+            "type": "summary",
+            "title": "Professional Summary",
+            "position": 0,
+            "content": "<p>Performance-driven <strong>Full-Stack Software Engineer</strong> and <strong>System Architect</strong> with expertise in the <strong>MERN stack, Next.js, and TypeScript</strong>. Specialized in building production-first SaaS applications with a focus on database integrity and scalable architecture. Proven track record in developing AI-integrated workflows and complex industrial calculation tools. Dedicated to clean code practices and modular system design.</p>"
+        },
+        {
+            "id": "sec-experience",
+            "type": "experience",
+            "title": "Work Experience",
+            "position": 1,
+            "content": "<p><strong>Lead Full-Stack Developer @ SkillBridge</strong></p><p>JAN 2024 – PRESENT</p><ul><li>Architected a tutor booking ecosystem with role-based access control (RBAC) for students, tutors, and admins.</li><li>Optimized frontend performance using Next.js and React Query, reducing page load times by 40%.</li><li>Implemented secure payment gateways and real-time scheduling features.</li></ul><p><strong>Software Engineer @ PH-HealthCare (SaaS Project)</strong></p><p>JUL 2023 – DEC 2023</p><ul><li>Developed a production-grade hospital management system using PostgreSQL and Prisma for strict data integrity.</li><li>Integrated Zod for robust schema validation, ensuring 100% type safety across the API layer.</li><li>Built complex appointment logic and medical record management modules.</li></ul>"
+        },
+        {
+            "id": "sec-projects",
+            "type": "projects",
+            "title": "Key Projects",
+            "position": 2,
+            "content": "<p><strong>Blitz Analyzer (AI Resume Tool)</strong>: Built an ATS-optimization engine using Groq and PDF parsing logic to provide real-time resume scoring.</p><p><strong>Garments Salary Calculator</strong>: Engineered a specialized industrial tool to handle piece-rate production and compliance calculations for large-scale manufacturing.</p>"
+        },
+        {
+            "id": "sec-skills",
+            "type": "skills",
+            "title": "Skills & Expertise",
+            "position": 3,
+            "content": "<p><strong>Primary Stack</strong>: MongoDB, Express.js, React, Node.js (MERN), Next.js, TypeScript, GraphQL.</p><p><strong>Backend & Databases</strong>: Golang (Secondary), PostgreSQL, Prisma, RESTful API Design.</p><p><strong>UI/UX & Frontend</strong>: Tailwind CSS, shadcn/ui, Framer Motion, Redux Toolkit.</p><p><strong>Tools & Workflow</strong>: Git, Docker, Zod, React Query, AI Automation.</p>"
+        },
+        {
+            "id": "sec-education",
+            "type": "education",
+            "title": "Education",
+            "position": 4,
+            "content": "<p><strong>B.Sc. in Computer Science & Engineering</strong></p><p>Relevant Coursework: System Architecture, Database Management Systems, Advanced Algorithms.</p>"
+        }
+    ]
+});
   const [styles, setStylesState] = useState<StyleSettings>(defaultStyles);
   const [selectedSectionId, setSelectedSection] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
@@ -40,10 +88,63 @@ export function useResumeEditor() {
   dataRef.current = data;
   stylesRef.current = styles;
 
+  console.log("resume",data);
+  
+
   // Load
   useEffect(() => {
     fetchResume().then(({ data: d, styles: s }) => {
-      setData(d);
+      console.log("styles",s);
+      
+      setData({
+    "id": "resume-habib-001",
+    "name": "Habib",
+    "title": "Full-Stack Software Engineer & System Architect",
+    "contacts": {
+        "email": "habib@example.com",
+        "phone": "+880-XXXXXXXXXX",
+        "location": "Bangladesh",
+        "linkedin": "linkedin.com/in/habibur-rahman-235462269",
+        "github": "github.com/habiburRhaman05"
+    },
+    "sections": [
+        {
+            "id": "sec-summary",
+            "type": "summary",
+            "title": "Professional Summary",
+            "position": 0,
+            "content": "<p>Performance-driven <strong>Full-Stack Software Engineer</strong> and <strong>System Architect</strong> with expertise in the <strong>MERN stack, Next.js, and TypeScript</strong>. Specialized in building production-first SaaS applications with a focus on database integrity and scalable architecture. Proven track record in developing AI-integrated workflows and complex industrial calculation tools. Dedicated to clean code practices and modular system design.</p>"
+        },
+        {
+            "id": "sec-experience",
+            "type": "experience",
+            "title": "Work Experience",
+            "position": 1,
+            "content": "<p><strong>Lead Full-Stack Developer @ SkillBridge</strong></p><p>JAN 2024 – PRESENT</p><ul><li>Architected a tutor booking ecosystem with role-based access control (RBAC) for students, tutors, and admins.</li><li>Optimized frontend performance using Next.js and React Query, reducing page load times by 40%.</li><li>Implemented secure payment gateways and real-time scheduling features.</li></ul><p><strong>Software Engineer @ PH-HealthCare (SaaS Project)</strong></p><p>JUL 2023 – DEC 2023</p><ul><li>Developed a production-grade hospital management system using PostgreSQL and Prisma for strict data integrity.</li><li>Integrated Zod for robust schema validation, ensuring 100% type safety across the API layer.</li><li>Built complex appointment logic and medical record management modules.</li></ul>"
+        },
+        {
+            "id": "sec-projects",
+            "type": "projects",
+            "title": "Key Projects",
+            "position": 2,
+            "content": "<p><strong>Blitz Analyzer (AI Resume Tool)</strong>: Built an ATS-optimization engine using Groq and PDF parsing logic to provide real-time resume scoring.</p><p><strong>Garments Salary Calculator</strong>: Engineered a specialized industrial tool to handle piece-rate production and compliance calculations for large-scale manufacturing.</p>"
+        },
+        {
+            "id": "sec-skills",
+            "type": "skills",
+            "title": "Skills & Expertise",
+            "position": 3,
+            "content": "<p><strong>Primary Stack</strong>: MongoDB, Express.js, React, Node.js (MERN), Next.js, TypeScript, GraphQL.</p><p><strong>Backend & Databases</strong>: Golang (Secondary), PostgreSQL, Prisma, RESTful API Design.</p><p><strong>UI/UX & Frontend</strong>: Tailwind CSS, shadcn/ui, Framer Motion, Redux Toolkit.</p><p><strong>Tools & Workflow</strong>: Git, Docker, Zod, React Query, AI Automation.</p>"
+        },
+        {
+            "id": "sec-education",
+            "type": "education",
+            "title": "Education",
+            "position": 4,
+            "content": "<p><strong>B.Sc. in Computer Science & Engineering</strong></p><p>Relevant Coursework: System Architecture, Database Management Systems, Advanced Algorithms.</p>"
+        }
+    ]
+});
       setStylesState(s);
       setLoading(false);
       setSaveStatus('saved');
@@ -128,6 +229,13 @@ export function useResumeEditor() {
     triggerSave();
   }, [triggerSave]);
 
+
+  const handlePdfDownload = ()=>{
+    const canvasHtml = document.getElementById("resume-canvas");
+    console.log(canvasHtml);
+    
+  }
+
   return {
     data,
     styles,
@@ -148,5 +256,6 @@ export function useResumeEditor() {
     reorderSections,
     setStyles,
     resetStyles,
+    handlePdfDownload
   };
 }

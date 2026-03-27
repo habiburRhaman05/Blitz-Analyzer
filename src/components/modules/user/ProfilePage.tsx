@@ -15,7 +15,9 @@ import { AvatarUpload } from "./ProfileAvatar";
 import httpClient from "@/lib/axios-client";
 import { log } from "handlebars/runtime";
 import { useApiMutation } from "@/hooks/useApiMutation";
-import { handleChangeAvatar } from "@/services/auth.services";
+import { handleChangeAvatar, handleProfileUpdate, revalidateProfileData } from "@/services/auth.services";
+import { IUser } from "@/interfaces/user";
+import { useMutation } from "@tanstack/react-query";
 
 
 // AvatarUpload Component
@@ -31,9 +33,10 @@ interface AvatarUploadProps {
 
 // Main AccountPage Component
 
-export default function AccountPage() {
-  const { user, isLoading ,refetch,setUser} = useUser();
-
+export default function AccountPage({userData:user}:{userData:IUser}) {
+  
+  console.log("user datta",user);
+  
 
   // Initial form state from user data
   const initialForm = useMemo(
@@ -48,11 +51,10 @@ export default function AccountPage() {
     [user]
   );
 
-  const saveChangeMutation = useApiMutation({
-    endpoint:"/auth/update-profile",
-    actionName:"save changes - update profile",
-    actionType:"SERVER_SIDE",
-    method:"PUT"
+  const saveChangeMutation = useMutation({
+    mutationKey:["update-profile"],
+    mutationFn:(payload)=>handleProfileUpdate(payload),
+  
   })
 
   const [form, setForm] = useState(initialForm);
@@ -63,13 +65,6 @@ export default function AccountPage() {
     [form, initialForm]
   );
 
-  // Initials for avatar fallback
-  const initials = user?.name
-    ?.split(" ")
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2) || "U";
 
 
   // Handle save changes
@@ -83,7 +78,7 @@ export default function AccountPage() {
    console.log(result);
    
    if(result?.success){
-    setUser(result.data)
+   await revalidateProfileData()
     toast.success("Profile updated successfully!");
    }
     
@@ -102,41 +97,9 @@ export default function AccountPage() {
       contactNumber: user?.contactNumber || "",
       })
     }
-  },[user,isLoading])
+  },[user])
   
 
-  if (isLoading) {
-    return (
-      <div className="max-w-4xl mx-auto w-full px-4 py-6 md:py-8">
-        // Inside your Navbar component, after the logo or before the theme switch:
-
-        <div className="space-y-6">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-72" />
-          <div className="flex items-center gap-6">
-            <Skeleton className="h-20 w-20 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-5 w-32" />
-              <Skeleton className="h-4 w-48" />
-            </div>
-          </div>
-          <Card>
-            <CardContent className="p-6 space-y-5">
-              <div className="grid gap-5 sm:grid-cols-2">
-                <Skeleton className="h-11 w-full" />
-                <Skeleton className="h-11 w-full" />
-                <Skeleton className="h-11 w-full" />
-                <Skeleton className="h-11 w-full" />
-                <Skeleton className="h-11 w-full" />
-                <Skeleton className="h-11 w-full" />
-              </div>
-              <Skeleton className="h-10 w-32" />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-4xl mx-auto w-full px-4 py-6 md:py-8">
@@ -151,16 +114,9 @@ export default function AccountPage() {
 <img src={user?.profileAvatar} alt="" className="hidden" />
    {user?.profileAvatar && 
    <AvatarUpload
-   refetch={refetch}
+   refetch={()=>{}}
   imageUrl={user?.profileAvatar}
   initials={user?.name?.charAt(0) || "U"}
-  
-  onUpload={async (uploadedUrl) => {
-    // Replace with actual API call
-     const response = await handleChangeAvatar(uploadedUrl);
-    return response.data
-   
-  }}
 />
    }
 
