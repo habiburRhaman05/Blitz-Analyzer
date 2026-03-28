@@ -33,10 +33,10 @@ interface AvatarUploadProps {
 
 // Main AccountPage Component
 
-export default function AccountPage({userData:user}:{userData:IUser}) {
-  
-  console.log("user datta",user);
-  
+export default function AccountPage({ userData: user }: { userData: IUser }) {
+
+  console.log("user datta", user);
+
 
   // Initial form state from user data
   const initialForm = useMemo(
@@ -52,9 +52,9 @@ export default function AccountPage({userData:user}:{userData:IUser}) {
   );
 
   const saveChangeMutation = useMutation({
-    mutationKey:["update-profile"],
-    mutationFn:(payload)=>handleProfileUpdate(payload),
-  
+    mutationKey: ["update-profile"],
+    mutationFn: (payload) => handleProfileUpdate(payload),
+
   })
 
   const [form, setForm] = useState(initialForm);
@@ -69,56 +69,56 @@ export default function AccountPage({userData:user}:{userData:IUser}) {
 
   // Handle save changes
   const handleSave = async () => {
-    
-   
-   const {email,...refindPayload} =  form;
- 
-    
-   const result = await saveChangeMutation.mutateAsync(refindPayload);
-   console.log(result);
-   
-   if(result?.success){
-   await revalidateProfileData()
-    toast.success("Profile updated successfully!");
-   }
-    
+
+
+    const { email, ...refindPayload } = form;
+
+
+    const result = await saveChangeMutation.mutateAsync(refindPayload);
+    console.log(result);
+
+    if (result?.success) {
+      await revalidateProfileData()
+      toast.success("Profile updated successfully!");
+    }
+
     // In a real app you would update the context with new values
   };
 
 
-  useEffect(()=>{
-    if(user){
+  useEffect(() => {
+    if (user) {
       setForm({
-             name: user?.name || "",
-      email: user?.email || "",
-      profession: user?.profession || "",
-      experienceLevel: user?.experienceLevel || "",
-      location: user?.location || "",
-      contactNumber: user?.contactNumber || "",
+        name: user?.name || "",
+        email: user?.email || "",
+        profession: user?.profession || "",
+        experienceLevel: user?.experienceLevel || "",
+        location: user?.location || "",
+        contactNumber: user?.contactNumber || "",
       })
     }
-  },[user])
-  
+  }, [user])
+
 
 
   return (
     <div className="max-w-4xl mx-auto w-full px-4 py-6 md:py-8">
 
-{user?.isFreeCreditClaim  === false && <ClaimFreeCredits userId={user?.id}/>}
+      {user?.isFreeCreditClaim === false && <ClaimFreeCredits userId={user?.id} />}
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="font-display text-2xl font-bold tracking-tight mt-5">Profile</h1>
         <p className="mt-1 text-muted-foreground">Manage your personal information and preferences</p>
       </motion.div>
 
-<img src={user?.profileAvatar} alt="" className="hidden" />
-   {user?.profileAvatar && 
-   <AvatarUpload
-   refetch={()=>{}}
-  imageUrl={user?.profileAvatar}
-  initials={user?.name?.charAt(0) || "U"}
-/>
-   }
+      <img src={user?.profileAvatar} alt="" className="hidden" />
+
+      <AvatarUpload
+        refetch={() => { }}
+        imageUrl={user?.profileAvatar}
+        initials={user?.name?.charAt(0) || "U"}
+      />
+
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

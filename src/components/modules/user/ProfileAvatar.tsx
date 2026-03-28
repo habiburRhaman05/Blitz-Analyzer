@@ -99,7 +99,7 @@ export function AvatarUpload({ imageUrl, initials,refetch }: AvatarUploadProps) 
         />
         <div onClick={() => status === "idle" && fileInputRef.current?.click()}>
           <Avatar className="h-24 w-24 ring-2 ring-border transition group-hover:ring-primary">
-            <AvatarImage src={profileImage || undefined} />
+            <AvatarImage src={profileImage || initials} />
             <AvatarFallback className="text-lg bg-muted">{initials}</AvatarFallback>
           </Avatar>
           <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
