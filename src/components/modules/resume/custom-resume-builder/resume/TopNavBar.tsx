@@ -35,27 +35,17 @@ export function TopNavBar({ saveStatus, documentTitle }: TopNavBarProps) {
   const [isSuccess, setIsSuccess] = useState(false);
 
 
-  const triggerFileDownload = async (url: string) => {
-    const fileResponse = await fetch(url);
-    const blob = await fileResponse.blob();
-    const pdfBlob = new Blob([blob], { type: 'application/pdf' });
-    const downloadUrl = window.URL.createObjectURL(pdfBlob);
-
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = `${documentTitle || 'Resume'}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(downloadUrl);
-  };
-
+const triggerFileDownload = async (url: string) => {
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${documentTitle || 'Resume'}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
   const handleDownload = async () => {
     try {
       setIsExporting(true);
-      
-     
       const canvas = document.getElementById('resume-canvas');
       if (canvas) {
         const inputs = canvas.querySelectorAll('input, textarea');
@@ -72,6 +62,8 @@ export function TopNavBar({ saveStatus, documentTitle }: TopNavBarProps) {
 
       if (response?.success && response?.data) {
         // Cloudinary URL theke download
+        console.log(response);
+        
         await triggerFileDownload(response.data);
 
         setIsSuccess(true);
@@ -81,7 +73,10 @@ export function TopNavBar({ saveStatus, documentTitle }: TopNavBarProps) {
         throw new Error("Invalid response from server");
       }
     } catch (error) {
+      alert()
       console.error("Export failed:", error);
+      console.log(error);
+      
       toast.error("Could not generate PDF. Please try again.");
     } finally {
       setIsExporting(false);

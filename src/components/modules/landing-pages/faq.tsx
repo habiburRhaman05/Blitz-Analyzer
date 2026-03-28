@@ -24,7 +24,7 @@ export function FAQSection() {
   const filteredFaqs = faqItems.filter((item) => item.category === selectedCategory);
 
   return (
-    <section className="relative w-full bg-white dark:bg-[#030303] py-24 overflow-hidden">
+    <section className="relative w-full bg-background py-24 overflow-hidden">
       {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 w-[500px] h-[500px] bg-blue-500/10 blur-[120px] rounded-full pointer-events-none" />
 

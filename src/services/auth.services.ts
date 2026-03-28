@@ -208,6 +208,7 @@ export const handleEmailVerification = async ({ email, otp }) => {
       "cookie": cookieStore.toString()
     }
   });
+console.log(result);
 
   return result.data
 

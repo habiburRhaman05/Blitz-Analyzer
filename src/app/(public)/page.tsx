@@ -7,6 +7,7 @@ import { Footer } from '@/components/modules/landing-pages/footer'
 import { HeroSection } from '@/components/modules/landing-pages/hero'
 import ProductHighlight from '@/components/modules/landing-pages/ProductHighlight'
 import { ResumeFeaturesSection } from '@/components/modules/landing-pages/resume-features'
+import ScrollToTop from '@/components/modules/landing-pages/ScrollToTop'
 import { TestimonialsSection } from '@/components/modules/landing-pages/testimonials'
 
 
@@ -19,6 +20,7 @@ export default function Home() {
       <ResumeFeaturesSection />
       <CareersSection />
       <FAQSection/>
+      <ScrollToTop/>
     </main>
   )
 }

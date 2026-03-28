@@ -26,9 +26,7 @@ import {
 import { getUserDashboardData } from "@/services/user.services";
 import { useUser } from "@/context/UserContext";
 
-// ----------------------------------------------------------------------
 // TYPES
-// ----------------------------------------------------------------------
 interface DashboardStats {
   totalAnalysis: number;
   totalResume: number;
@@ -42,9 +40,7 @@ interface DashboardApiResponse {
   meta: { timestamp: string };
 }
 
-// ----------------------------------------------------------------------
 // NAVIGATION ITEMS
-// ----------------------------------------------------------------------
 const navItems = [
   { path: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
   { path: "/dashboard/resumes", label: "My Resumes", icon: FilePlus, exact: false },
@@ -54,14 +50,10 @@ const navItems = [
   { path: "/dashboard/settings", label: "Settings", icon: Settings, exact: false },
 ];
 
-// ----------------------------------------------------------------------
 // HELPER: Active route detection
-// ----------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------
 // SKELETON COMPONENTS
-// ----------------------------------------------------------------------
 const StatsSkeleton = () => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
     {[...Array(3)].map((_, i) => (
@@ -106,9 +98,7 @@ const QuickActionsSkeleton = () => (
   </div>
 );
 
-// ----------------------------------------------------------------------
 // MAIN COMPONENT
-// ----------------------------------------------------------------------
 const UserDashboardPage = () => {
   const pathname = usePathname();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -127,11 +117,6 @@ const {user} = useUser()
 
   const stats = apiResponse?.data;
 
-  // Helper to close sidebar on mobile after navigation
-
-  // ----------------------------------------------------------------------
-  // RENDER
-  // ----------------------------------------------------------------------
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 font-sans antialiased">
    
@@ -288,7 +273,7 @@ const {user} = useUser()
                 </h2>
                 <div className="space-y-3">
                   <Link
-                    href="/dashboard/resumes/new"
+                    href="/dashboard/templates"
                     className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40 border border-indigo-100 dark:border-indigo-900/50 hover:shadow-md transition-all group"
                   >
                     <div className="flex items-center gap-3">
@@ -304,7 +289,7 @@ const {user} = useUser()
                   </Link>
 
                   <Link
-                    href="/dashboard/history/new"
+                    href="/analysis"
                     className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all group"
                   >
                     <div className="flex items-center gap-3">

@@ -29,6 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getAllResumeById } from "@/services/resume.services";
 import { useQuery } from "@tanstack/react-query";
 import ResumeListItem from "./ResumeListItem";
+import Link from "next/link";
 
 
 // Types
@@ -275,7 +276,9 @@ const { data, isLoading, isError, error, refetch } = useQuery<ApiResponse>({
                 onClick={() => router.push("/resume/new")}
                 className="rounded-full"
               >
+               <Link href={"/dashboard/templates"}>
                 Create Resume
+               </Link>
               </Button>
             )}
           </div>

@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/carousel'
 import { useEffect, useState } from 'react'
 import Autoplay from 'embla-carousel-autoplay'
+import Link from 'next/link'
 
 const testimonials = [
   {
@@ -232,11 +233,14 @@ export function TestimonialsSection() {
         {/* See All Reviews Button */}
         <div className="flex justify-center pt-12 animate-fadeIn">
           <Button
+          asChild
             variant="outline"
             className="border-2 border-gray-900/20 dark:border-white/20 text-gray-900 dark:text-white px-8 py-2 rounded-full font-semibold hover:bg-gray-50 dark:hover:bg-slate-800 transition-all duration-300 flex items-center gap-2 backdrop-blur-sm"
           >
+          <Link href={"/reviews"}>
             See all reviews
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </Link>
           </Button>
         </div>
       </div>

@@ -68,18 +68,19 @@ export default function EmailVerificationUI() {
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
 
+
     try {
       
  const result = await  handleEmailVerification({email,otp:data.otp})
-      if (result.data?.success) {
+      if (result.success) {
         setVerified(true);
-        toast.success(result.data?.message || "Email verified successfully!");
+        toast.success(result.message || "Email verified successfully!");
       } else {
-        toast.error(result.data?.message || "Invalid OTP");
+        toast.error(result.message || "Invalid OTP");
       }
     } catch (error: any) {
       toast.error(
-        error?.response?.data?.message || "Verification failed"
+        error?.response?.message || "Verification failed"
       );
     } finally {
       setIsLoading(false);
@@ -97,6 +98,7 @@ export default function EmailVerificationUI() {
         email,
         verificationType: "EMAIL_VERIFY",
       });
+
 
       if (result.data?.success) {
         toast.success(result.data?.message || "OTP resent successfully");
@@ -178,7 +180,7 @@ export default function EmailVerificationUI() {
 
               {/* Resend */}
               <div className="mt-6 text-center text-sm text-zinc-500">
-                {timer > 0 ? (
+                {/* {timer > 0 ? (
                   <p>
                     Resend OTP in{" "}
                     <span className="font-medium text-zinc-800 dark:text-zinc-200">
@@ -186,7 +188,9 @@ export default function EmailVerificationUI() {
                     </span>
                   </p>
                 ) : (
-                  <button
+                 
+                )} */}
+                 <button
                     onClick={handleResend}
                     disabled={isResending}
                     className="flex items-center justify-center gap-2 mx-auto text-blue-600 hover:underline"
@@ -198,7 +202,6 @@ export default function EmailVerificationUI() {
                     )}
                     Resend OTP
                   </button>
-                )}
               </div>
             </motion.div>
           ) : (
