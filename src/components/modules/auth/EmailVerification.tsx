@@ -42,9 +42,7 @@ export default function EmailVerificationUI() {
 
   const { register, handleSubmit, formState, reset } = form;
 
-  // ==================
   // Timer Logic
-  // ==================
   useEffect(() => {
     if (timer <= 0) return;
 
@@ -62,9 +60,7 @@ export default function EmailVerificationUI() {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  // ==================
   // Submit OTP (REAL API)
-  // ==================
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
 
@@ -87,9 +83,7 @@ export default function EmailVerificationUI() {
     }
   };
 
-  // ==================
   // Resend OTP (REAL API)
-  // ==================
   const handleResend = async () => {
     setIsResending(true);
 
@@ -116,9 +110,7 @@ export default function EmailVerificationUI() {
     }
   };
 
-  // ==================
   // UI
-  // ==================
   return (
     <div className=" flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
@@ -180,7 +172,7 @@ export default function EmailVerificationUI() {
 
               {/* Resend */}
               <div className="mt-6 text-center text-sm text-zinc-500">
-                {/* {timer > 0 ? (
+                {timer > 0 ? (
                   <p>
                     Resend OTP in{" "}
                     <span className="font-medium text-zinc-800 dark:text-zinc-200">
@@ -189,7 +181,6 @@ export default function EmailVerificationUI() {
                   </p>
                 ) : (
                  
-                )} */}
                  <button
                     onClick={handleResend}
                     disabled={isResending}
@@ -202,6 +193,7 @@ export default function EmailVerificationUI() {
                     )}
                     Resend OTP
                   </button>
+                )}
               </div>
             </motion.div>
           ) : (

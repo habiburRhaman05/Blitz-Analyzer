@@ -273,8 +273,8 @@ const { data, isLoading, isError, error, refetch } = useQuery<ApiResponse>({
             </p>
             {!searchQuery && (
               <Button
-                onClick={() => router.push("/resume/new")}
                 className="rounded-full"
+                asChild
               >
                <Link href={"/dashboard/templates"}>
                 Create Resume

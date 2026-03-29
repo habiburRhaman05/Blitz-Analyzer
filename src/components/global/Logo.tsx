@@ -21,7 +21,7 @@ export default function Logo({ size = "md", clickable = true }: LogoProps) {
   const {theme} =  useTheme();
 
   const logoUrl = useMemo(()=>{
-     return `/logos/${theme}-logo.svg`;
+     return theme === "dark" ? "https://res.cloudinary.com/drngnsgwy/image/upload/v1774239280/blitz-analyzer/images/logos/dark-logo_b9ypum.svg" : "https://res.cloudinary.com/drngnsgwy/image/upload/v1774239281/blitz-analyzer/images/logos/light-logo_jvaomw.svg"
   },[theme])
 
   return (

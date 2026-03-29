@@ -43,7 +43,7 @@ export default function SignInPage() {
     {
       name: "Michael Carter",
       role: "Software Engineer at DevCore",
-      text: "Builder.io has completely transformed our testing process. It's reliable, efficient, and ensures our releases are always top-notch.",
+      text: "Blitz-Analyzer.com has completely transformed our testing process. It's reliable, efficient, and ensures our releases are always top-notch.",
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
     },
   ];
@@ -64,7 +64,7 @@ export default function SignInPage() {
       title="Welcome Back!"
       subtitle="Sign in to access your dashboard and continue optimizing your QA process."
       rightContent={
-        <div className="w-full max-w-lg space-y-12 text-white animate-fadeIn">
+        <div className="w-full max-w-lg space-y-12 text-black dark:text-white animate-fadeIn">
           {/* Testimonial */}
           <div className="space-y-6 animate-fadeInUp" style={{ animationDelay: "0.3s" }}>
             <div className="text-5xl font-bold leading-tight">
