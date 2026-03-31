@@ -174,16 +174,6 @@ Short description: pricing, checkout, and upgrade flow.
 Short description: user management, pricing control, and KPI view.
 
 ---
-
-
-## ⭐ Recruiter Quick View
-
-### What to look at first
-
-* End-to-end flow: **Auth → OTP → Dashboard → Analysis → Payment**
-* Real SaaS features: **reports, templates, premium flow, history tracking**
-* Clean architecture: **modular frontend + reusable UI system**
-
 ---
 
 ## 🎯 Highlights (Why this project stands out)
