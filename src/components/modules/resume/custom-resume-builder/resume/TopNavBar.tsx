@@ -73,11 +73,10 @@ const triggerFileDownload = async (url: string) => {
         throw new Error("Invalid response from server");
       }
     } catch (error) {
-      alert()
+    
       console.error("Export failed:", error);
       console.log(error);
-      
-      toast.error("Could not generate PDF. Please try again.");
+      toast.error("Could not generate PDF. Please try again also Check Wallet");
     } finally {
       setIsExporting(false);
     }

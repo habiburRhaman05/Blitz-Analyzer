@@ -6,10 +6,11 @@ import {
   Check, 
   Download, 
   ArrowRight, 
-  ExternalLink, 
   Clock, 
   CreditCard,
-  ShieldCheck
+  AlertCircle,
+  XCircle,
+  RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,16 +18,50 @@ import { getPaymentDetails } from '@/services/payment.services';
 import { useQuery } from '@tanstack/react-query';
 import Link from "next/link";
 
+const STATUS_MAP = {
+  SUCCESS: {
+    color: "emerald",
+    icon: Check,
+    title: "Payment successful",
+    description: "Thank you for your purchase",
+    showReceipt: true,
+    actionText: "Continue to Dashboard",
+    actionHref: "/dashboard"
+  },
+  PENDING: {
+    color: "amber",
+    icon: Clock,
+    title: "Payment pending",
+    description: "Your transaction is being processed",
+    showReceipt: false,
+    actionText: "Refresh Status",
+    actionHref: null 
+  },
+  FAILED: {
+    color: "red",
+    icon: XCircle,
+    title: "Payment failed",
+    description: "There was an issue processing your payment",
+    showReceipt: false,
+    actionText: "Back to Billing",
+    actionHref: "/billing"
+  }
+} as const;
+
 const PaymentDetails = ({ id }: { id: string }) => {
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: [`fetch-payment-details-${id}`],
     queryFn: () => getPaymentDetails(id),
   });
-  console.log("[paymenterror",data);
+
   if (isLoading) return <LoadingState />;
   if (isError || !data?.success) return <ErrorState />;
 
   const payment = data.data;
+
+  const statusKey = (payment.status as keyof typeof STATUS_MAP) || "PENDING";
+  const config = STATUS_MAP[statusKey];
+  const Icon = config.icon;
 
   return (
     <div className="min-h-[90vh] flex items-center justify-center bg-[#fafafa] dark:bg-[#050505] p-6">
@@ -35,16 +70,24 @@ const PaymentDetails = ({ id }: { id: string }) => {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-[550px] bg-white dark:bg-[#0a0a0a] border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.05),0_10px_40px_rgba(0,0,0,0.03)] overflow-hidden"
       >
-        {/* Success Header - Minimalist */}
+        {/* Dynamic Header */}
         <div className="p-8 pb-0 flex flex-col items-center text-center">
-          <div className="h-12 w-12 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4">
-            <Check className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+          <div className={`h-12 w-12 rounded-full flex items-center justify-center mb-4 
+            ${statusKey === 'SUCCESS' ? 'bg-emerald-500/10' : ''}
+            ${statusKey === 'PENDING' ? 'bg-amber-500/10' : ''}
+            ${statusKey === 'FAILED' ? 'bg-red-500/10' : ''}
+          `}>
+            <Icon className={`h-6 w-6 
+              ${statusKey === 'SUCCESS' ? 'text-emerald-600 dark:text-emerald-400' : ''}
+              ${statusKey === 'PENDING' ? 'text-amber-600 dark:text-amber-400' : ''}
+              ${statusKey === 'FAILED' ? 'text-red-600 dark:text-red-400' : ''}
+            `} />
           </div>
           <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-            Payment successful
+            {config.title}
           </h1>
           <p className="text-sm text-zinc-500 mt-1">
-            Thank you for your purchase, {payment.user.name}.
+            {config.description}, {payment.user.name}.
           </p>
         </div>
 
@@ -61,17 +104,19 @@ const PaymentDetails = ({ id }: { id: string }) => {
         {/* Transaction Details Table */}
         <div className="px-8 pb-8 space-y-3">
           <div className="flex justify-between items-center py-3 border-t border-zinc-100 dark:border-zinc-900">
-            <span className="text-sm text-zinc-500">Transaction ID</span>
-            <span className="text-sm font-mono text-zinc-900 dark:text-zinc-300">
-               {payment.id.slice(0, 13).toUpperCase()}
+            <span className="text-sm text-zinc-500">Status</span>
+            <span className={`text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wider
+               ${statusKey === 'SUCCESS' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : ''}
+               ${statusKey === 'PENDING' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : ''}
+               ${statusKey === 'FAILED' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : ''}
+            `}>
+              {statusKey}
             </span>
           </div>
           <div className="flex justify-between items-center py-3 border-t border-zinc-100 dark:border-zinc-900">
-            <span className="text-sm text-zinc-500">Date</span>
-            <span className="text-sm text-zinc-900 dark:text-zinc-300">
-              {new Date(payment.createdAt).toLocaleDateString('en-US', {
-                month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
-              })}
+            <span className="text-sm text-zinc-500">Transaction ID</span>
+            <span className="text-sm font-mono text-zinc-900 dark:text-zinc-300">
+               {payment.id.slice(0, 13).toUpperCase()}
             </span>
           </div>
           <div className="flex justify-between items-center py-3 border-t border-zinc-100 dark:border-zinc-900">
@@ -83,32 +128,43 @@ const PaymentDetails = ({ id }: { id: string }) => {
           </div>
         </div>
 
-        {/* Professional Actions */}
+        {/* Dynamic Professional Actions */}
         <div className="p-8 bg-zinc-50/50 dark:bg-white/[0.02] border-t border-zinc-100 dark:border-zinc-800 flex flex-col gap-3">
-          <Button 
-            asChild
-            className="w-full h-11 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black hover:opacity-90 rounded-lg font-medium transition-all"
-          >
-            <a href="/dashboard">
-              Continue to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
-            </a>
-          </Button>
-          <Button 
-            variant="ghost" 
-            asChild
-            className="w-full h-11 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 font-medium"
-          >
-            <Link href={payment.invoiceUrl || ""} target="_blank" rel="noreferrer">
-              <Download className="mr-2 h-4 w-4" /> Download PDF Receipt
-            </Link>
-          </Button>
+          {config.actionHref ? (
+            <Button 
+              asChild
+              className="w-full h-11 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black hover:opacity-90 rounded-lg font-medium transition-all"
+            >
+              <Link href={config.actionHref}>
+                {config.actionText} <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          ) : (
+            <Button 
+              onClick={() => refetch()}
+              className="w-full h-11 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black hover:opacity-90 rounded-lg font-medium transition-all"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" /> {config.actionText}
+            </Button>
+          )}
+          
+          {config.showReceipt && (
+            <Button 
+              variant="ghost" 
+              asChild
+              className="w-full h-11 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 font-medium"
+            >
+              <Link href={payment.invoiceUrl || ""} target="_blank" rel="noreferrer">
+                <Download className="mr-2 h-4 w-4" /> Download PDF Receipt
+              </Link>
+            </Button>
+          )}
         </div>
       </motion.div>
     </div>
   );
 };
 
-// --- Subcomponents ---
 
 const LoadingState = () => (
   <div className="min-h-[80vh] flex items-center justify-center p-6">
