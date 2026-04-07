@@ -1,24 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useMemo } from "react";
+import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Briefcase,
-  CheckCircle2,
-  CircleDashed,
   AlertCircle,
   TrendingUp,
   Lightbulb,
   Target,
-  ChevronRight,
   Info,
   Sparkles,
   Download,
-  Share2
+  Share2,
+  MessageSquare
 } from "lucide-react";
-
-// Standard UI components - Replace with your own or shadcn/ui
 import { Button } from "@/components/ui/button";
 
 interface JobMatcherProps {
@@ -26,9 +22,25 @@ interface JobMatcherProps {
 }
 
 export default function JobMatcherDetails({ data }: JobMatcherProps) {
+  // Normalize data to handle variations in LLM response keys
+  const res = useMemo(() => {
+    if (!data) return null;
+    const root = data.result || data; // Handle nested or direct response
+    return {
+      match_percentage: root.match_percentage || root.matchScore || 0,
+      match_verdict: root.match_verdict || (root.matchScore > 70 ? "Strong Match" : "Fair Match"),
+      verdict_description: root.verdict_description || root.summary || "",
+      strategic_advice: root.strategic_advice || {
+        resume_tweak: root.recommendations?.[0] || "Optimize key sections.",
+        interview_focus: root.recommendations?.[1] || "Prepare for technical deep dives.",
+        custom_pitch: root.recommendations?.[2] || "Highlight unique value."
+      },
+      requirement_mapping: root.requirement_mapping || [],
+      top_skill_gaps: root.top_skill_gaps || root.missingSkills || []
+    };
+  }, [data]);
 
-
-  if (!data) return <JobMatcherSkeleton />;
+  if (!res) return <JobMatcherSkeleton />;
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] text-foreground p-4 md:p-8">
@@ -37,7 +49,7 @@ export default function JobMatcherDetails({ data }: JobMatcherProps) {
         {/* Navigation Header */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="rounded-full bg-white dark:bg-zinc-900 shadow-sm">
+            <Button variant="ghost" size="icon" className="rounded-full bg-white dark:bg-zinc-900 shadow-sm border">
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
@@ -46,97 +58,97 @@ export default function JobMatcherDetails({ data }: JobMatcherProps) {
             </div>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" className="rounded-xl bg-white dark:bg-zinc-900">
+            <Button variant="outline" className="rounded-xl">
               <Share2 className="mr-2 h-4 w-4" /> Share
             </Button>
-            <Button className="rounded-xl bg-primary text-white shadow-lg shadow-primary/20">
+            <Button className="rounded-xl shadow-lg shadow-primary/20">
               <Download className="mr-2 h-4 w-4" /> Save PDF
             </Button>
           </div>
         </header>
 
-        {/* Hero Section: Verdict & Gauge */}
+        {/* Hero Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-8 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden"
+            className="lg:col-span-8 bg-white dark:bg-zinc-900 border rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden"
           >
             <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-10">
-              <MatchGauge percentage={data.match_percentage} />
+              <MatchGauge percentage={res.match_percentage} />
               <div className="space-y-4 text-center md:text-left">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-tighter">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase">
                   <Sparkles className="h-3 w-3" /> AI Analysis Complete
                 </div>
-                <h2 className="text-4xl font-black">{data.match_verdict}</h2>
+                <h2 className="text-4xl font-black">{res.match_verdict}</h2>
                 <p className="text-zinc-500 dark:text-zinc-400 leading-relaxed text-lg max-w-xl">
-                  {data.verdict_description}
+                  {res.verdict_description}
                 </p>
               </div>
             </div>
-            {/* Background Accent */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -mr-32 -mt-32" />
           </motion.div>
 
+          {/* Upsell/Action Card */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-            className="lg:col-span-4 bg-primary text-primary-foreground rounded-[2.5rem] p-8 flex flex-col justify-between shadow-xl shadow-primary/10"
+            className="lg:col-span-4 bg-primary text-primary-foreground rounded-[2.5rem] p-8 flex flex-col justify-between shadow-xl"
           >
             <div className="space-y-4">
               <div className="h-12 w-12 bg-white/20 rounded-2xl flex items-center justify-center">
                 <TrendingUp className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold leading-tight">Improve your match by 15%</h3>
-              <p className="text-white/80 text-sm">Addressing the missing AWS certifications could push you into the "Exceptional Match" tier.</p>
+              <h3 className="text-xl font-bold leading-tight">Boost Your Score</h3>
+              <p className="text-white/80 text-sm">Addressing key skill gaps could improve your compatibility by up to 20%.</p>
             </div>
             <Button className="mt-6 bg-white text-primary hover:bg-white/90 rounded-2xl font-bold py-6">
-              Optimize Now
+              Optimize Resume
             </Button>
           </motion.div>
         </div>
 
-        {/* Strategic Advice Section */}
+        {/* Strategic Advice */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <AdviceCard 
             icon={<Target className="text-blue-500" />} 
             title="Resume Tweak" 
-            content={data.strategic_advice.resume_tweak} 
+            content={res.strategic_advice.resume_tweak} 
             delay={0.2}
           />
           <AdviceCard 
-            icon={<MessageSquareIcon className="text-purple-500" />} 
+            icon={<MessageSquare className="text-purple-500 h-5 w-5" />} 
             title="Interview Focus" 
-            content={data.strategic_advice.interview_focus} 
+            content={res.strategic_advice.interview_focus} 
             delay={0.3}
           />
           <AdviceCard 
             icon={<Lightbulb className="text-amber-500" />} 
             title="Custom Pitch" 
-            content={data.strategic_advice.custom_pitch} 
+            content={res.strategic_advice.custom_pitch} 
             delay={0.4}
           />
         </div>
 
-        {/* Requirement Matrix */}
+        {/* Requirement Matrix & Sidebar */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
             <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
               <Briefcase className="h-4 w-4" /> Requirement Mapping
             </h3>
             <div className="space-y-4">
-              {data.requirement_mapping.map((item: any, i: number) => (
+              {res.requirement_mapping.map((item: any, i: number) => (
                 <MappingRow key={i} item={item} index={i} />
               ))}
             </div>
           </div>
 
           <div className="space-y-6">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2rem] p-6 shadow-sm">
+            <div className="bg-white dark:bg-zinc-900 border rounded-[2rem] p-6 shadow-sm">
               <h3 className="text-sm font-bold mb-6 flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 text-primary" /> Priority Skill Gaps
               </h3>
               <div className="space-y-3">
-                {data.top_skill_gaps.map((skill: string, i: number) => (
-                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800">
+                {res.top_skill_gaps.map((skill: string, i: number) => (
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border">
                     <div className="h-2 w-2 rounded-full bg-primary" />
                     <span className="text-sm font-medium">{skill}</span>
                   </div>
@@ -150,21 +162,22 @@ export default function JobMatcherDetails({ data }: JobMatcherProps) {
   );
 }
 
-// --- UI COMPONENTS ---
+// Sub-components
 
 function MatchGauge({ percentage }: { percentage: number }) {
-  const circumference = 2 * Math.PI * 60;
+  const radius = 60;
+  const circumference = 2 * Math.PI * radius;
   const offset = circumference - (percentage / 100) * circumference;
 
   return (
     <div className="relative h-40 w-40 flex items-center justify-center">
       <svg className="h-40 w-40 -rotate-90">
-        <circle cx="80" cy="80" r="60" fill="none" stroke="currentColor" strokeWidth="12" className="text-zinc-100 dark:text-zinc-800" />
+        <circle cx="80" cy="80" r={radius} fill="none" stroke="currentColor" strokeWidth="12" className="text-zinc-100 dark:text-zinc-800" />
         <motion.circle 
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
           transition={{ duration: 2, ease: "circOut" }}
-          cx="80" cy="80" r="60" fill="none" stroke="currentColor" strokeWidth="12" 
+          cx="80" cy="80" r={radius} fill="none" stroke="currentColor" strokeWidth="12" 
           strokeDasharray={circumference} strokeLinecap="round" className="text-primary" 
         />
       </svg>
@@ -186,15 +199,15 @@ function MappingRow({ item, index }: { item: any, index: number }) {
   return (
     <motion.div 
       initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.1 }}
-      className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-[1.5rem] shadow-sm hover:shadow-md transition-shadow group"
+      className="bg-white dark:bg-zinc-900 border p-6 rounded-[1.5rem] shadow-sm hover:shadow-md transition-shadow"
     >
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
         <h4 className="font-bold text-lg">{item.requirement}</h4>
-        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${statusColors[item.status]}`}>
+        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${statusColors[item.status] || statusColors.MISSING}`}>
           {item.status}
         </span>
       </div>
-      <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-700">
+      <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-xl border border-dashed">
         <p className="text-sm text-zinc-600 dark:text-zinc-400 italic">
           <Info className="inline h-3.5 w-3.5 mr-2 -mt-0.5 opacity-50" />
           "{item.evidence}"
@@ -208,9 +221,9 @@ function AdviceCard({ icon, title, content, delay }: any) {
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay }}
-      className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-[2rem] shadow-sm"
+      className="bg-white dark:bg-zinc-900 border p-6 rounded-[2rem] shadow-sm"
     >
-      <div className="h-10 w-10 bg-zinc-50 dark:bg-zinc-800 rounded-xl flex items-center justify-center mb-4 border border-zinc-100 dark:border-zinc-700">
+      <div className="h-10 w-10 bg-zinc-50 dark:bg-zinc-800 rounded-xl flex items-center justify-center mb-4 border">
         {icon}
       </div>
       <h4 className="font-bold mb-2">{title}</h4>
@@ -227,20 +240,6 @@ function JobMatcherSkeleton() {
         <div className="col-span-8 h-64 bg-zinc-200 dark:bg-zinc-800 rounded-[2.5rem]" />
         <div className="col-span-4 h-64 bg-zinc-200 dark:bg-zinc-800 rounded-[2.5rem]" />
       </div>
-      <div className="grid grid-cols-3 gap-6">
-        <div className="h-40 bg-zinc-100 dark:bg-zinc-900 rounded-[2rem]" />
-        <div className="h-40 bg-zinc-100 dark:bg-zinc-900 rounded-[2rem]" />
-        <div className="h-40 bg-zinc-100 dark:bg-zinc-900 rounded-[2rem]" />
-      </div>
     </div>
-  );
-}
-
-// Simple Helper Icon
-function MessageSquareIcon(props: any) {
-  return (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" >
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    </svg>
   );
 }

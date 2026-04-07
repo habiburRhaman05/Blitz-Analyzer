@@ -100,6 +100,7 @@ export default function AnalysisDetails({ analysisData, onRetry, cacheKey }: Ana
 
   if (!analysisResult) return null;
 
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-background text-foreground p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-8">

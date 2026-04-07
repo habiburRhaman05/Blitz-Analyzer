@@ -1,5 +1,6 @@
 import PublicHeader from '@/components/global/PublicHeader'
 import { Footer } from '@/components/modules/landing-pages/footer'
+import AIChatbot from '@/components/modules/landing-pages/AIChatbot'
 import React, { ReactNode } from 'react'
 
 const publiclayout = ({children}:{children:ReactNode}) => {
@@ -9,6 +10,7 @@ const publiclayout = ({children}:{children:ReactNode}) => {
       
         {children}
       <Footer/>
+      <AIChatbot />
 
     </div>
   )

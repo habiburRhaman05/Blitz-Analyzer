@@ -9,6 +9,7 @@ import PremiumAnalysisLoader from "./AnalysisAnimation";
 import { AnalysisSkeleton } from "./AnalysisDetailsSkelections";
 import {motion} from "framer-motion"
 import { useSearchParams } from "next/navigation";
+import JobMatcherDetails from "./JobMatcherAnalysisDetails";
 interface Props {
   id: string;
 }
@@ -21,6 +22,7 @@ const AnalysisDetailsWrapper = ({ id }: Props) => {
     queryKey: [cacheKey],
     queryFn: () => getAnalysisDetails(id),
   });
+console.log(data);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -47,6 +49,7 @@ const AnalysisDetailsWrapper = ({ id }: Props) => {
   
   // Final check for data existence
   if (!data?.data) return <AnalysisNotFound />;
+  if(data?.data.match_percentage) return <JobMatcherDetails data={data.data}/>
 
   return (
     <motion.div 

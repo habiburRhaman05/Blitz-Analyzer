@@ -6,13 +6,24 @@ import {
   Crown, FileText,
   Filter,
   LayoutGrid,
-  Plus
+  Plus,
+  Search,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { useApiQuery } from "@/hooks/useApiQuery";
 import { useQuery } from "@tanstack/react-query";
 import { getAllTemplateDetailsPublic, getAllTemplatePublic } from "@/services/admin.services";
@@ -36,6 +47,8 @@ interface TemplateData {
 
 const categories = ["all", "professional", "creative", "simple", "modern"] as const;
 
+const ITEMS_PER_PAGE = 8;
+
 const TemplateSkeleton = () => (
   <div className="rounded-xl border border-border bg-card p-6 min-h-[350px] flex flex-col animate-pulse">
     <div className="flex-1 space-y-4">
@@ -50,6 +63,9 @@ export default function CreateResumeWrapper() {
   const router = useRouter();
   const [category, setCategory] = useState<string>("all");
   const [showPremium, setShowPremium] = useState<"all" | "free" | "premium">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"name" | "price-low" | "price-high" | "sections">("name");
+  const [currentPage, setCurrentPage] = useState(1);
 
 
  
@@ -64,18 +80,41 @@ export default function CreateResumeWrapper() {
 
   const templates: TemplateData[] | any = data?.data || [];
 
-  // --- Filtering Logic ---
-  const filtered = templates.filter((t:TemplateData) => {
-    // Note: Since 'category' isn't explicitly in your JSON root but in descriptions, 
-    // we match against the 'slug' or 'name' for this example.
-    const matchesCategory = category === "all" || t.slug.includes(category) || t.name.toLowerCase().includes(category);
-    const matchesPremium = 
-      showPremium === "all" || 
-      (showPremium === "free" && !t.isPremium) || 
-      (showPremium === "premium" && t.isPremium);
-    
-    return matchesCategory && matchesPremium;
-  });
+  // --- Filtering, Sorting & Pagination Logic ---
+  const filtered = useMemo(() => {
+    let items = templates.filter((t:TemplateData) => {
+      const matchesCategory = category === "all" || t.slug.includes(category) || t.name.toLowerCase().includes(category);
+      const matchesPremium = 
+        showPremium === "all" || 
+        (showPremium === "free" && !t.isPremium) || 
+        (showPremium === "premium" && t.isPremium);
+      const matchesSearch = searchQuery === "" || 
+        t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.descriptions.core_details.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      return matchesCategory && matchesPremium && matchesSearch;
+    });
+
+    items.sort((a: TemplateData, b: TemplateData) => {
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      if (sortBy === "price-low") return a.price - b.price;
+      if (sortBy === "price-high") return b.price - a.price;
+      if (sortBy === "sections") return b.sections.length - a.sections.length;
+      return 0;
+    });
+
+    return items;
+  }, [templates, category, showPremium, searchQuery, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginatedTemplates = filtered.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handleFilterChange = () => {
+    setCurrentPage(1);
+  };
 
   const handleSelectTemplate = (id: string) => {
     router.push(`/dashboard/templates/${id}?mode=template`);
@@ -102,7 +141,19 @@ export default function CreateResumeWrapper() {
           </p>
         </motion.div>
 
-        {/* Filters */}
+        {/* Search Bar */}
+        <div className="relative max-w-lg mx-auto mb-8">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search templates by name or description..."
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); handleFilterChange(); }}
+            className="h-12 pl-11 rounded-xl border-border bg-muted/30 focus-visible:ring-primary"
+          />
+        </div>
+
+        {/* Filters + Sort */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
           <div className="flex items-center gap-2 flex-wrap">
             <Filter className="h-4 w-4 text-muted-foreground mr-2" />
@@ -111,26 +162,42 @@ export default function CreateResumeWrapper() {
                 key={cat}
                 variant={category === cat ? "default" : "outline"}
                 size="sm"
-                onClick={() => setCategory(cat)}
+                onClick={() => { setCategory(cat); handleFilterChange(); }}
                 className={`rounded-full px-5 ${category === cat ? "bg-primary shadow-md" : ""}`}
               >
                 {cat.charAt(0).toUpperCase() + cat.slice(1)}
               </Button>
             ))}
           </div>
-          <div className="flex items-center bg-muted/50 p-1 rounded-full border border-border">
-            {(["all", "free", "premium"] as const).map((type) => (
-              <Button
-                key={type}
-                variant={showPremium === type ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setShowPremium(type)}
-                className="rounded-full px-4"
-              >
-                {type === "premium" && <Crown className="h-3 w-3 mr-1 text-amber-500" />}
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </Button>
-            ))}
+          <div className="flex items-center gap-3">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="rounded-full gap-2">
+                  <ArrowUpDown className="h-3.5 w-3.5" />
+                  Sort: {sortBy === "name" ? "Name" : sortBy === "price-low" ? "Price ↑" : sortBy === "price-high" ? "Price ↓" : "Sections"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setSortBy("name")}>Name (A-Z)</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("price-low")}>Price: Low to High</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("price-high")}>Price: High to Low</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("sections")}>Most Sections</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <div className="flex items-center bg-muted/50 p-1 rounded-full border border-border">
+              {(["all", "free", "premium"] as const).map((type) => (
+                <Button
+                  key={type}
+                  variant={showPremium === type ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => { setShowPremium(type); handleFilterChange(); }}
+                  className="rounded-full px-4"
+                >
+                  {type === "premium" && <Crown className="h-3 w-3 mr-1 text-amber-500" />}
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -166,7 +233,7 @@ export default function CreateResumeWrapper() {
               Array.from({ length: 4 }).map((_, i) => <TemplateSkeleton key={i} />)
             ) : (
               <AnimatePresence mode="popLayout">
-                {filtered.map((template:TemplateData) => (
+                {paginatedTemplates.map((template:TemplateData) => (
                   <motion.div
                     key={template.id}
                     layout
@@ -219,7 +286,34 @@ export default function CreateResumeWrapper() {
         </div>
       </div>
 
-  
+        {/* Pagination */}
+        {!isFetching && filtered.length > ITEMS_PER_PAGE && (
+          <div className="flex justify-center items-center gap-4 mt-12 mb-6">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+              className="rounded-xl gap-1.5"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Previous
+            </Button>
+            <span className="text-sm font-bold text-muted-foreground">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+              className="rounded-xl gap-1.5"
+            >
+              Next
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
     </div>
   );
 }

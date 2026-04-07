@@ -15,7 +15,10 @@ import {
   ShieldCheck,
   Loader2,
   AlertTriangle,
-  Loader
+  Loader,
+  Star,
+  FileText,
+  ThumbsUp
 } from "lucide-react";
 import {
   AlertDialog,
@@ -32,10 +35,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from '@/context/UserContext';
 import { useApiMutation } from '@/hooks/useApiMutation';
 import { getUserCredit } from '@/services/credit.services';
-import { getAllTemplateDetailsPublic } from '@/services/admin.services';
+import { getAllTemplateDetailsPublic, getAllTemplatePublic } from '@/services/admin.services';
 import { useQuery } from '@tanstack/react-query';
 
 interface TemplateDetailsProps {
@@ -218,7 +222,15 @@ router.push(`/dashboard/templates/${id}/builder/${result.data.id}`)
                   </div>
                </div>
             </div>
+
+            {/* Reviews Section */}
+            <TemplateReviews />
           </motion.div>
+      {/* Related Templates */}
+      <div className="col-span-full">
+        <RelatedTemplates currentId={id} />
+      </div>
+
       {/* --- LOW CREDIT ALERT --- */}
       <AlertDialog open={showLowCreditAlert} onOpenChange={setShowLowCreditAlert}>
         <AlertDialogContent className="rounded-3xl border-2 border-destructive/20">
@@ -250,6 +262,145 @@ router.push(`/dashboard/templates/${id}/builder/${result.data.id}`)
 };
 
 // --- Helper Components ---
+
+// --- Mock Reviews Data ---
+const mockReviews = [
+  {
+    id: 1,
+    name: "Sarah Mitchell",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+    rating: 5,
+    date: "2 weeks ago",
+    comment: "This template helped me land 3 interviews in one week. The ATS formatting is perfect and recruiters loved the clean layout.",
+    helpful: 24,
+  },
+  {
+    id: 2,
+    name: "James Carter",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
+    rating: 4,
+    date: "1 month ago",
+    comment: "Very professional look. Easy to customize and the sections are well organized. Would love to see more color options.",
+    helpful: 18,
+  },
+  {
+    id: 3,
+    name: "Emily Nguyen",
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop",
+    rating: 5,
+    date: "1 month ago",
+    comment: "Best template I've used. The ATS score went from 62% to 94% after switching to this layout. Highly recommend!",
+    helpful: 31,
+  },
+];
+
+function TemplateReviews() {
+  const avgRating = (mockReviews.reduce((sum, r) => sum + r.rating, 0) / mockReviews.length).toFixed(1);
+
+  return (
+    <section className="space-y-6 pt-4">
+      <Separator className="bg-border/60" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600">
+            <Star className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold">Reviews & Ratings</h3>
+            <div className="flex items-center gap-2 mt-0.5">
+              <div className="flex gap-0.5">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star key={star} className={`h-3.5 w-3.5 ${star <= Math.round(Number(avgRating)) ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200 dark:fill-gray-700 dark:text-gray-700"}`} />
+                ))}
+              </div>
+              <span className="text-sm font-semibold">{avgRating}</span>
+              <span className="text-xs text-muted-foreground">({mockReviews.length} reviews)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {mockReviews.map((review) => (
+          <div key={review.id} className="rounded-2xl border bg-card/50 p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={review.avatar} alt={review.name} />
+                  <AvatarFallback>{review.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-bold">{review.name}</p>
+                  <p className="text-xs text-muted-foreground">{review.date}</p>
+                </div>
+              </div>
+              <div className="flex gap-0.5">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star key={star} className={`h-3.5 w-3.5 ${star <= review.rating ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200 dark:fill-gray-700 dark:text-gray-700"}`} />
+                ))}
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">{review.comment}</p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <ThumbsUp className="h-3.5 w-3.5" />
+              <span>{review.helpful} found this helpful</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function RelatedTemplates({ currentId }: { currentId: string }) {
+  const { data } = useQuery({
+    queryKey: ["templates-list"],
+    queryFn: () => getAllTemplatePublic(),
+  });
+
+  const router = useRouter();
+  const templates = (data?.data || []).filter((t: { id: string }) => t.id !== currentId).slice(0, 4);
+
+  if (templates.length === 0) return null;
+
+  return (
+    <section className="mt-16 space-y-8">
+      <Separator className="bg-border/60" />
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-600">
+          <FileText className="h-5 w-5" />
+        </div>
+        <h3 className="text-2xl font-bold">Related Templates</h3>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {templates.map((t: { id: string; name: string; previewUrl: string; isPremium: boolean; price: number; sections: string[] }) => (
+          <motion.div
+            key={t.id}
+            whileHover={{ y: -4 }}
+            onClick={() => router.push(`/dashboard/templates/${t.id}?mode=template`)}
+            className="group cursor-pointer rounded-2xl border overflow-hidden bg-card hover:border-primary/50 hover:shadow-xl transition-all"
+          >
+            <div className="relative aspect-[3/4] bg-muted overflow-hidden">
+              <img src={t.previewUrl} alt={t.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500" />
+              {t.isPremium && (
+                <Badge className="absolute top-3 right-3 bg-amber-500 hover:bg-amber-600 text-white border-none text-[10px] shadow-lg">
+                  <Crown className="h-2.5 w-2.5 mr-1" /> Premium
+                </Badge>
+              )}
+            </div>
+            <div className="p-4">
+              <h4 className="text-sm font-bold group-hover:text-primary transition-colors truncate">{t.name}</h4>
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-xs text-muted-foreground">{t.sections.length} sections</span>
+                <span className="text-xs font-bold">{t.price === 0 ? "Free" : `$${t.price}`}</span>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 const LoadingSkeleton = () => (
   <div className="container mx-auto px-6 py-20 space-y-12">

@@ -53,6 +53,23 @@ export const handleAnalysis = async (formData)=>{
       );
       return response.data
 }
+export const jobMatcher = async (formData)=>{
+    const cookieStore = await cookies()
+
+    const response = await httpClient.post(
+        `/analyzer/job-matcher`, 
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+        "cookie": cookieStore.toString()
+          },
+        }
+      );
+      console.log("res",response);
+      
+      return response.data
+}
 export const getUserAnalysisHistory = async ()=>{
     const cookieStore = await cookies()
     const response = await httpClient.get(

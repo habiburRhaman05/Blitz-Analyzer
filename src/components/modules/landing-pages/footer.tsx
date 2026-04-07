@@ -10,10 +10,29 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 const footerLinks = {
-  Tools: ["Resume Analyzer", "ATS Optimizer", "PDF Parsing", "AI Rewriter"],
-  Company: ["About", "Careers", "Press", "Contact"],
-  Resources: ["Documentation", "API Reference", "Community", "Success Stories"],
-  Legal: ["Privacy Policy", "Terms of Service", "Cookie Policy"],
+  Tools: [
+    { label: "Resume Analyzer", href: "/analysis" },
+    { label: "ATS Optimizer", href: "/analysis" },
+    { label: "Templates", href: "/pricing" },
+    { label: "AI Rewriter", href: "/analysis" },
+  ],
+  Company: [
+    { label: "About", href: "/about-us" },
+    { label: "Careers", href: "/about-us" },
+    { label: "Blog", href: "/blog" },
+    { label: "Contact", href: "/contact-us" },
+  ],
+  Resources: [
+    { label: "Documentation", href: "/blog" },
+    { label: "Pricing", href: "/pricing" },
+    { label: "Reviews", href: "/reviews" },
+    { label: "Help Center", href: "/contact-us" },
+  ],
+  Legal: [
+    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Terms of Service", href: "/terms" },
+    { label: "Cookie Policy", href: "/privacy" },
+  ],
 };
 
 export function Footer() {
@@ -73,12 +92,12 @@ export function Footer() {
               </h4>
               <ul className="space-y-3">
                 {links.map((link) => (
-                  <li key={link}>
+                  <li key={link.label}>
                     <Link 
-                      href="#" 
+                      href={link.href} 
                       className="text-muted-foreground hover:text-foreground text-sm transition-all flex items-center group/link w-fit"
                     >
-                      {link}
+                      {link.label}
                       <ArrowUpRight className="w-3 h-3 ml-1 opacity-0 group-hover/link:opacity-100 transition-all -translate-x-1 group-hover/link:translate-x-0" />
                     </Link>
                   </li>
@@ -93,8 +112,8 @@ export function Footer() {
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-6 text-xs text-muted-foreground font-medium">
             <p>&copy; {currentYear} Blitz Analyzer. Built by Habib.</p>
             <div className="flex gap-4">
-              <Link href="#" className="hover:text-foreground transition-colors">Privacy Policy</Link>
-              <Link href="#" className="hover:text-foreground transition-colors">Terms of Service</Link>
+              <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
             </div>
           </div>
           

@@ -14,6 +14,7 @@ import {
   Activity,
   Zap
 } from 'lucide-react'
+import { Bar, BarChart, Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts"
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
@@ -105,38 +106,115 @@ const AdminDashboard = () => {
         />
       </div>
 
-      {/* Main Content Area */}
-      <div className="grid gap-8 lg:grid-cols-3">
-        {/* Large Visual Section */}
-        <Card className="lg:col-span-2 border-none bg-white dark:bg-zinc-900 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl overflow-hidden">
+      {/* Charts Section */}
+      <div className="grid gap-8 lg:grid-cols-2">
+        {/* Bar Chart - Monthly Activity */}
+        <Card className="border-none bg-white dark:bg-zinc-900 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl overflow-hidden">
           <div className="p-8 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-zinc-600">
-                <Activity className="h-5 w-5" />
+              <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-xl text-blue-600">
+                <BarChart3 className="h-5 w-5" />
               </div>
-              <h3 className="font-bold text-xl">System Activity</h3>
-            </div>
-            <div className="flex gap-2">
-              {['Daily', 'Weekly', 'Monthly'].map(t => (
-                <button key={t} className="text-xs font-bold px-3 py-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors uppercase tracking-tighter">
-                  {t}
-                </button>
-              ))}
+              <h3 className="font-bold text-xl">Monthly Activity</h3>
             </div>
           </div>
-          <CardContent className="h-[350px] flex items-center justify-center p-0">
-             <div className="relative group cursor-crosshair">
-                <div className="absolute -inset-4 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all duration-500" />
-                <p className="relative text-muted-foreground font-medium flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-emerald-500" />
-                  Activity metrics are climbing steady.
-                </p>
-             </div>
+          <CardContent className="h-[320px] p-6">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={[
+                { month: 'Jan', analyses: 12, resumes: 5, transactions: 3 },
+                { month: 'Feb', analyses: 18, resumes: 8, transactions: 5 },
+                { month: 'Mar', analyses: 24, resumes: 12, transactions: 8 },
+                { month: 'Apr', analyses: 16, resumes: 9, transactions: 6 },
+                { month: 'May', analyses: 30, resumes: 15, transactions: 10 },
+                { month: 'Jun', analyses: 38, resumes: 20, transactions: 14 },
+              ]}>
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis dataKey="month" className="text-xs" />
+                <YAxis className="text-xs" />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
+                <Bar dataKey="analyses" fill="#3b82f6" radius={[6, 6, 0, 0]} name="Analyses" />
+                <Bar dataKey="resumes" fill="#8b5cf6" radius={[6, 6, 0, 0]} name="Resumes" />
+                <Bar dataKey="transactions" fill="#f97316" radius={[6, 6, 0, 0]} name="Transactions" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Line Chart - Growth Trend */}
+        <Card className="border-none bg-white dark:bg-zinc-900 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl overflow-hidden">
+          <div className="p-8 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl text-emerald-600">
+                <TrendingUp className="h-5 w-5" />
+              </div>
+              <h3 className="font-bold text-xl">User Growth Trend</h3>
+            </div>
+          </div>
+          <CardContent className="h-[320px] p-6">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={[
+                { week: 'W1', users: 120, active: 85 },
+                { week: 'W2', users: 145, active: 102 },
+                { week: 'W3', users: 168, active: 118 },
+                { week: 'W4', users: 192, active: 140 },
+                { week: 'W5', users: 225, active: 165 },
+                { week: 'W6', users: 260, active: 190 },
+                { week: 'W7', users: 298, active: 218 },
+                { week: 'W8', users: 340, active: 250 },
+              ]}>
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis dataKey="week" className="text-xs" />
+                <YAxis className="text-xs" />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
+                <Line type="monotone" dataKey="users" stroke="#10b981" strokeWidth={3} dot={{ fill: '#10b981', r: 4 }} name="Total Users" />
+                <Line type="monotone" dataKey="active" stroke="#6366f1" strokeWidth={3} dot={{ fill: '#6366f1', r: 4 }} name="Active Users" />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Pie Chart + User Segments */}
+      <div className="grid gap-8 lg:grid-cols-3">
+        {/* Pie Chart - Distribution */}
+        <Card className="border-none bg-white dark:bg-zinc-900 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl overflow-hidden">
+          <div className="p-8 border-b border-zinc-100 dark:border-zinc-800">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-50 dark:bg-purple-500/10 rounded-xl text-purple-600">
+                <Activity className="h-5 w-5" />
+              </div>
+              <h3 className="font-bold text-xl">Usage Distribution</h3>
+            </div>
+          </div>
+          <CardContent className="h-[320px] p-6">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Analyses', value: stats?.totalAnalysis || 45 },
+                    { name: 'Resumes', value: stats?.totalResume || 30 },
+                    { name: 'Transactions', value: stats?.totalTransactions || 25 },
+                  ]}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={4}
+                  dataKey="value"
+                >
+                  <Cell fill="#3b82f6" />
+                  <Cell fill="#8b5cf6" />
+                  <Cell fill="#f97316" />
+                </Pie>
+                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 600 }} />
+              </PieChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
 
         {/* Status Breakdown Sidebar */}
-        <Card className="border-none bg-white dark:bg-zinc-900 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl">
+        <Card className="lg:col-span-2 border-none bg-white dark:bg-zinc-900 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl">
           <div className="p-8">
             <h3 className="font-bold text-xl mb-6">User Segments</h3>
             <div className="space-y-5">

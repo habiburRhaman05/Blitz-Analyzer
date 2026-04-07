@@ -23,7 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import httpClient from "@/lib/axios-client";
 import { AnalysisType } from "@/interfaces/enums";
-import { handleAnalysis } from "@/services/analysis.services";
+import { handleAnalysis, jobMatcher } from "@/services/analysis.services";
 
 
 
@@ -43,7 +43,7 @@ const analysisOptions = [
     label: "Job Match Analysis",
     desc: "Compare your resume against a specific job posting for tailored feedback",
     features: ["Skill gap detection", "Keyword matching", "Requirement alignment"],
-    disabled:true
+    disabled:false
   },
 ];
 
