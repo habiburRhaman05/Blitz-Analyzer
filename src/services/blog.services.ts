@@ -27,9 +27,9 @@ export const createBlog = async (payload) => {
     return result.data
 }
 
-export const deleteBlog = async (reviewId) => {
+export const deleteBlog = async (blogId) => {
     const cookieStore = await cookies()
-    const result = await httpClient.post(`/blog/${reviewId}`, {}, {
+    const result = await httpClient.delete(`/blog/${blogId}`, {
         headers: {
             "cookie": cookieStore.toString()
         }

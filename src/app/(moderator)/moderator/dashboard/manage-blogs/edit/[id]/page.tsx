@@ -1,10 +1,13 @@
 import CreateBlogPage from '@/components/modules/moderator/blogs/CreateBlogFrom'
+import EditBlogPage from '@/components/modules/moderator/blogs/EditBlog'
 import React from 'react'
 
-const EditBlog = () => {
+const EditBlog = async ({params}) => {
+  const {id} = await params
   return (
     <div>
-        <CreateBlogPage/>
+      {id}
+        <EditBlogPage id={id}/>
     </div>
   )
 }

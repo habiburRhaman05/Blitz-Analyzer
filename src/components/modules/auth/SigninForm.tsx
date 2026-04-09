@@ -20,6 +20,7 @@ import { UserRole } from '@/interfaces/enums'
 import { useUser } from '@/context/UserContext'
 import AppLoader from '@/components/global/AppLoader'
 import FormSubmitButton from '@/components/forms/FromSubmitButton'
+import DemoLoginButton from './DemoLoginButton'
 
 export function SignInForm() {
     const router = useRouter()
@@ -132,7 +133,7 @@ export function SignInForm() {
                 </div>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 min-w-full">
                         <FormInput
                             control={form.control}
                             name="email"
@@ -157,17 +158,7 @@ export function SignInForm() {
                             isLoading={isLoading}
                         />
 
-                        <button
-                            type="button"
-                            onClick={() => {
-                                form.setValue('email', 'demo@blitz-analyzer.com')
-                                form.setValue('password', 'Demo@1234')
-                            }}
-                            className="w-full h-10 rounded-lg border-2 border-dashed border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 text-sm font-semibold hover:bg-blue-100 dark:hover:bg-blue-950/50 transition-all"
-                        >
-                            🚀 Use Demo Credentials
-                        </button>
-
+                        <DemoLoginButton login={onSubmit} isLoading={isLoading}/>
                         <p className="text-center text-xs text-muted-foreground py-2 font-medium">
                             Don't have an account?{' '}
                             <button

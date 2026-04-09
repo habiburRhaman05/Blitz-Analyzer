@@ -25,7 +25,7 @@ export const createIssue = async (payload) => {
 
 export const deleteIssue = async (issueId) => {
     const cookieStore = await cookies()
-    const result = await httpClient.post(`/issue/${issueId}`, {}, {
+    const result = await httpClient.delete(`/issue/${issueId}`, {
         headers: {
             "cookie": cookieStore.toString()
         }
@@ -35,7 +35,7 @@ export const deleteIssue = async (issueId) => {
 
 export const updateIssue = async (updatepayload,issueId) => {
     const cookieStore = await cookies()
-    const result = await httpClient.post(`/issue/${issueId}`, updatepayload, {
+    const result = await httpClient.patch(`/issue/${issueId}`, updatepayload, {
         headers: {
             "cookie": cookieStore.toString()
         }

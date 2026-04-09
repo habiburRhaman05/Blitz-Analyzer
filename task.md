@@ -4,7 +4,7 @@
 -public issue lsting with create and filter view
 -manager issue update or reply
 -custum resume builder ai add 
--complete demo login,
+-complete demo login,--done
 - ai based search features
 -refeactor ing admin dashboard with charts
 -generate backend code for admin chart data

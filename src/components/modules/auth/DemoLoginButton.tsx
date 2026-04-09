@@ -1,101 +1,75 @@
-import { Select, SelectItem } from '@/components/ui/select'
+'use client'
+
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useMutation } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { AnimatePresence } from 'framer-motion'
+import { Loader2 } from 'lucide-react'
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useUser } from '@/context/UserContext'
 import { UserRole } from '@/interfaces/enums'
 import { handleLogin } from '@/services/auth.services'
 import { LoginFormData } from '@/validations-schemas/auth/auth.schema'
-import { useMutation } from '@tanstack/react-query'
-import React, { useState } from 'react'
-import { toast } from 'sonner'
+import AppLoader from '@/components/global/AppLoader'
 
-const DemoLoginButton = () => {
- const [showLoading, setShowLoading] = useState(false)
-    const { fetchUser } = useUser()
+const DemoLoginButton = ({login,isLoading}) => {
+
+
     const demoLogin = {
-        admin:{
-            email:"admin@blitz-analyzer.com",
-        password:"admin@blitz"
-        },
-        user:{
-            email:"devhabib2005@gmail.com",
-        password:"12345678"
-        },
-        manager:{
-            email:"admin@gmail.com",
-        password:"12345678"
-        }
+        admin: { email: "admin@blitz-analyzer.com", password: "admin@blitz" },
+        user: { email: "devhabib2005@gmail.com", password: "12345678" },
+        manager: { email: "admin@gmail.com", password: "12345678" }
     }
+
+ 
+
+    // Triggered automatically when a role is selected from the dropdown
+    async function handleDemoSelect(role: keyof typeof demoLogin) {
+       await login(demoLogin[role])
+    }
+
+    return (
+        <div className='flex items-center w-full justify-center'>
     
-        const { mutateAsync: signInMutation, isPending: isLoading } = useMutation({
-            mutationFn: async (data: LoginFormData) => {
-                const result = await handleLogin(data)
-                console.log(result)
-                return result
-            },
-           
-            onSuccess: () => {
-                setShowLoading(true)
-            }
-        })
-    
-        async function onSubmit(data: LoginFormData) {
-            try {
-                const userData = await signInMutation(data)
-                if (userData?.success) {
-                    toast.success("You are Login Successfully")
-                    await fetchUser()
-                    if (userData.user.role === UserRole.ADMIN) {
-                        router.push("/admin/dashboard")
-                    } else if(userData.user.role === UserRole.MANAGER) {
-                        router.push("/moderator/dashboard")
-                    }else{
-                        router.push("/dashboard")
-    
-                    }
-                } else {
-                    if (userData?.errors && Array.isArray(userData.errors)) {
-                        form.clearErrors()
-                        userData.errors.forEach((err: any) => {
-                            const fieldName = err.path?.[0]
-                            if (fieldName) {
-                                form.setError(fieldName, {
-                                    type: "server",
-                                    message: err.message
-                                })
-                            }
-                        })
-                    } else {
-                        toast.error(userData?.message || "Login failed")
-                    }
-                    setShowLoading(false)
-                }
-            } catch (error: any) {
-                console.error("Login Error:", error)
-                toast.error(error?.message || "Something went wrong")
-                setShowLoading(false)
-            }
-        }
-
-         <AnimatePresence>
-                {showLoading && <AppLoader />}
-            </AnimatePresence>
-
-  return (
-    <div>
-        <Select>choose role ofr demos 
-
-
-            <SelectItem>
-                login as user
-            </SelectItem>
-            <SelectItem>
-                login as manager
-            </SelectItem>
-            <SelectItem>
-                login as admin
-            </SelectItem>
-        </Select>
-    </div>
-  )
+            {/* Modern UI Select */}
+            <Select 
+              onValueChange={(value: keyof typeof demoLogin) => handleDemoSelect(value)} 
+              disabled={isLoading}
+            >
+                <SelectTrigger className="w-[220px] bg-background/50 backdrop-blur-md border-white/10 hover:bg-accent/50 transition-all duration-300">
+                    {/* Conditional Loading UI inside the Select Trigger */}
+                    {isLoading ? (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                            <span className="text-sm font-medium">Authenticating...</span>
+                        </div>
+                    ) : (
+                        <SelectValue placeholder="Quick Demo Login" />
+                    )}
+                </SelectTrigger>
+                
+                <SelectContent className="backdrop-blur-xl bg-background/80 border-white/10 shadow-xl rounded-xl">
+                    <SelectItem value="user" className="cursor-pointer focus:bg-primary/20">
+                        Login as User
+                    </SelectItem>
+                    <SelectItem value="manager" className="cursor-pointer focus:bg-primary/20">
+                        Login as Manager
+                    </SelectItem>
+                    <SelectItem value="admin" className="cursor-pointer focus:bg-primary/20">
+                        Login as Admin
+                    </SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+    )
 }
 
 export default DemoLoginButton
