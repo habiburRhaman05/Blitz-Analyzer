@@ -122,10 +122,13 @@
 // }
 
 // export default ManagerIssues
+
 import React from 'react'
 
-export const page = () => {
+const page = () => {
   return (
     <div>page</div>
   )
 }
+
+export default page

@@ -1,11 +1,11 @@
 -create a repo fix error 
--complete blog manage ment for manager (delete,create,view with filter) 
-- also public blog manages
+-complete blog manage ment for manager (delete,create,view with filter) --done
+- also public blog manages 
 -public issue lsting with create and filter view
 -manager issue update or reply
 -custum resume builder ai add 
 -complete demo login,--done
-- ai based search features
+- ai based search features --done
 -refeactor ing admin dashboard with charts
 -generate backend code for admin chart data
 -admin report generate by ai summerise
