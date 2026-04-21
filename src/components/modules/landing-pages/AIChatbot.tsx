@@ -163,7 +163,7 @@ export default function AIChatbot() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-            className="fixed bottom-6 right-6 z-[60]"
+            className="fixed bottom-6 right-6 z-[60] "
           >
             <Button
               onClick={() => setIsOpen(true)}

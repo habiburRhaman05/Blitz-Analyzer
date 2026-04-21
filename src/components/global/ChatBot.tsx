@@ -27,6 +27,8 @@ import {
   ArrowUp,
   ArrowDown,
   X,
+  MessageSquare,
+  BotIcon,
 } from 'lucide-react';
 
 type AnyMessage = {
@@ -394,12 +396,13 @@ export default function ChatModal() {
       {/* Floating Trigger */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-20 right-8 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-slate-900 text-white shadow-2xl shadow-slate-900/30 transition-all duration-500 hover:scale-110 hover:shadow-slate-900/50 active:scale-95 dark:bg-white dark:text-slate-900 dark:shadow-white/20 ${
+        className={`fixed bottom-20 right-6 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 transition-all flex items-center justify-center group ${
           isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'
         }`}
         aria-label="Open AI Assistant"
       >
-        <Sparkles className="h-6 w-6" />
+                     <BotIcon className="h-6 w-6" />
+
       </button>
 
       {/* Modal Overlay */}
