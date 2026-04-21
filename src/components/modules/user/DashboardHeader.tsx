@@ -41,11 +41,7 @@ export default function DashboardHeader() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
-    { label: "Home", path: "/" },
-    { label: "Analysis", path: "/analysis" },
-    { label: "Pricing", path: "/pricing" },
-  ];
+  
 
   return (
     <header
@@ -69,37 +65,7 @@ export default function DashboardHeader() {
         </div>
 
         {/* 🔶 CENTER: Navigation */}
-        <nav className="hidden md:flex items-center gap-2 relative">
-
-          {navLinks.map((link) => {
-            const active = pathname === link.path;
-
-            return (
-              <button
-                key={link.path}
-                onClick={() => router.push(link.path)}
-                className={cn(
-                  "relative px-3 py-1.5 text-sm font-medium rounded-lg transition",
-                  active
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {link.label}
-
-                {/* Active Indicator */}
-                {active && (
-                  <motion.div
-                    layoutId="nav-indicator"
-                    className="absolute inset-0 rounded-lg bg-primary/10 border border-primary/20"
-                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                  />
-                )}
-              </button>
-            );
-          })}
-        </nav>
-
+        
         {/* 🔷 RIGHT: Actions */}
         <div className="flex items-center gap-2">
 

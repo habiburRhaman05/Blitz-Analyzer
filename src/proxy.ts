@@ -6,7 +6,7 @@ import { getTokens, isTokenExpiringSoon, refreshTokens } from './services/auth.s
 import { UserRole } from './interfaces/enums';
 
 const AUTH_ROUTES = ['/sign-in', '/sign-up'];
-const PUBLIC_ROUTES = ['/', '/about-us',"/contact-us", '/verify-email','/issues'];
+const PUBLIC_ROUTES = ['/', '/about-us',"/contact-us", '/verify-email','/issues','/blogs','/pricing'];
 
 
 export async function proxy(request: NextRequest) {
