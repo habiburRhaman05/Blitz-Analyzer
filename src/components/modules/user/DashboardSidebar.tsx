@@ -13,7 +13,8 @@ import {
   ShieldCheck,
   HelpCircle,
   User2,
-  Calculator
+  Calculator,
+  Logs
 } from "lucide-react";
 
 import { NavLink } from "@/components/global/NavLink";
@@ -58,11 +59,11 @@ const NAVIGATION_CONFIG = {
     { path: "/admin/dashboard/profile", label: "Profile", icon: User },
     { path: "/admin/dashboard/settings", label: "Settings", icon: Settings },
 
-
   ],
   MANAGER: [
   
     { path: "/moderator/dashboard/manage-blogs", label: "Manages Blogs", icon: LucideBookTemplate },
+    { path: "/moderator/dashboard/manage-Issues", label: "All Issues", icon: Logs },
    
 
 

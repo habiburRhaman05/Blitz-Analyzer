@@ -51,6 +51,8 @@ export const handleAnalysis = async (formData)=>{
           },
         }
       );
+
+
       return response.data
 }
 export const jobMatcher = async (formData)=>{

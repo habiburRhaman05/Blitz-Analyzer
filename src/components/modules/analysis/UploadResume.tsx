@@ -86,6 +86,8 @@ export default function UploadPage() {
 
   // Logic: Validation
   const validate = () => {
+ 
+    
     const errs: Record<string, string> = {};
     if (!resumeFile) errs.file = "Please upload a resume";
     
@@ -102,6 +104,12 @@ export default function UploadPage() {
 const handleSubmit = async () => {
     // 1. Run Validation
     if (!validate() || !resumeFile) return;
+console.log(resumeFile);
+
+    if(!resumeFile.type.includes("application/pdf")){
+      toast.error("only PDF file are Acepectable")
+      return
+    }
 
     // 2. Start Loading State
     setIsUploading(true);
@@ -124,9 +132,6 @@ const handleSubmit = async () => {
         );
       }
 
-      // 4. Send Request via httpClient
-      // Note: Use a template literal to define the specific endpoint for the type
-    
 
       // 5. Handle Success
       const result = await handleAnalysis(formData) // Assuming your axios client returns data directly
@@ -139,6 +144,8 @@ const handleSubmit = async () => {
       // 6. Handle Errors
       console.error("Analysis Error:", error);
       const errorMessage = error.response?.data?.message || "Failed to upload resume. Please try again.";
+      toast.error(errorMessage || error.message)
+
     } finally {
       // 7. Stop Loading State
       setIsUploading(false);
@@ -241,8 +248,6 @@ const handleSubmit = async () => {
                         <span key={f} className={`rounded-full px-2.5 py-0.5 text-xs ${isActive ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>{f}</span>
                       ))}
                     </div>
-
-                    <span className="text-center text-red-800 font-semibold">{opt.type === "JOB_MATCHER" && "This Service is Tempory Disabled "}</span>
                   </motion.button>
                 );
               })}
@@ -282,7 +287,7 @@ const handleSubmit = async () => {
             <Button size="lg" className="w-full rounded-xl bg-primary text-primary-foreground text-base font-semibold h-14" onClick={handleSubmit} disabled={isUploading}>
               {isUploading ? "Uploading..." : <>Analyze Resume <ArrowRight className="ml-2 h-5 w-5" /></>}
             </Button>
-            <p className="mt-3 text-center text-xs text-muted-foreground">Free analysis • No account required • Results in ~30 seconds</p>
+            <p className="mt-3 text-center text-xs text-muted-foreground">Free analysis • Results in ~30 seconds</p>
           </motion.div>
 
         </motion.div>

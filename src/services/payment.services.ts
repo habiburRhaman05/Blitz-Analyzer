@@ -23,3 +23,14 @@ export const getUserPaymentHistory = async (userId:string) =>{
     })
     return result.data
 }
+export const getAllPaymentHistory = async () =>{
+
+    const cookieStore = await cookies();
+    const result = await httpClient.get(`/payment/get-all-transactions`,{
+        headers:{
+            "cookie":cookieStore.toString()
+        }
+    })
+    return result.data
+}
+

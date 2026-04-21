@@ -454,13 +454,7 @@ export default function EditBlogPage({id}) {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => setIsAiModalOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 rounded-md text-sm font-medium transition-colors"
-                    >
-                        <Sparkles className="w-4 h-4" />
-                        Generate with AI
-                    </button>
+                  
                     <button
                         onClick={() => setIsPreviewModalOpen(true)}
                         className="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-md text-sm font-medium transition-colors"
@@ -649,23 +643,7 @@ export default function EditBlogPage({id}) {
                 </div>
             </div>
 
-            {/* AI Generation Modal */}
-            {isAiModalOpen && (
-                <AiGenerationModal
-                    onClose={() => setIsAiModalOpen(false)}
-                    onSuccess={(aiData) => {
-                        setFormData({
-                            title: aiData.title,
-                            slug: aiData.slug,
-                            excerpt: aiData.excerpt,
-                            fullContent: aiData.full_content,
-                            seoTags: aiData.seo_tags,
-                            category: aiData.category || "AI Generated",
-                            thumbnail: formData.thumbnail,
-                        });
-                    }}
-                />
-            )}
+       
 
             {/* Preview Modal */}
             {isPreviewModalOpen && (
@@ -681,186 +659,6 @@ export default function EditBlogPage({id}) {
 }
 
 
-// AI GENERATION MODAL (unchanged except minor)
-
-function AiGenerationModal({
-    onClose,
-    onSuccess,
-}: {
-    onClose: () => void;
-    onSuccess: (data: any) => void;
-}) {
-    const [aiInput, setAiInput] = useState({
-        topic: "",
-        target_audience: "junior developers",
-        tone: "professional but friendly",
-        keywords: "",
-        length: "long",
-        category: "career",
-    });
-
-    const generateMutation = useMutation({
-        mutationFn: async (payload: any) => {
-            const response = await fetch(
-                "http://localhost:5000/api/v1/generative-ai/generate",
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload),
-                }
-            );
-            if (!response.ok) throw new Error("Failed to generate AI content");
-            return response.json();
-        },
-        onSuccess: (data) => {
-            if (data?.output) {
-                onSuccess(data.output);
-                onClose();
-            }
-        },
-        onError: (error) => {
-            console.error("AI Generation Error:", error);
-            // Implement toast notification here
-        },
-    });
-
-    const handleGenerate = () => {
-        const payload = {
-            mode: "blog",
-            context: {
-                role: "manager",
-                platform: "resume builder SaaS",
-                audience_level: "beginner to intermediate",
-                brand_voice: "modern, helpful, no fluff",
-            },
-            data: {
-                ...aiInput,
-                keywords: aiInput.keywords.split(",").map((k) => k.trim()).filter(Boolean),
-            },
-        };
-        generateMutation.mutate(payload);
-    };
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-            <div className="bg-card text-card-foreground border border-border w-full max-w-2xl rounded-xl shadow-xl overflow-hidden flex flex-col">
-                <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/30">
-                    <div className="flex items-center gap-2 text-primary">
-                        <Wand2 className="w-5 h-5" />
-                        <h2 className="text-lg font-semibold text-foreground">
-                            AI Content Generator
-                        </h2>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-
-                <div className="p-6 space-y-5 overflow-y-auto max-h-[70vh]">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium flex items-center gap-2">
-                            <Type className="w-4 h-4 text-muted-foreground" /> Topic
-                        </label>
-                        <input
-                            type="text"
-                            value={aiInput.topic}
-                            onChange={(e) => setAiInput({ ...aiInput, topic: e.target.value })}
-                            placeholder="e.g. How to create a strong frontend developer portfolio"
-                            className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium flex items-center gap-2">
-                                <Users className="w-4 h-4 text-muted-foreground" /> Target Audience
-                            </label>
-                            <input
-                                type="text"
-                                value={aiInput.target_audience}
-                                onChange={(e) =>
-                                    setAiInput({ ...aiInput, target_audience: e.target.value })
-                                }
-                                className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">Tone</label>
-                            <input
-                                type="text"
-                                value={aiInput.tone}
-                                onChange={(e) => setAiInput({ ...aiInput, tone: e.target.value })}
-                                className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">Length</label>
-                            <select
-                                value={aiInput.length}
-                                onChange={(e) => setAiInput({ ...aiInput, length: e.target.value })}
-                                className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                            >
-                                <option value="short">Short</option>
-                                <option value="medium">Medium</option>
-                                <option value="long">Long</option>
-                            </select>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">Category</label>
-                            <input
-                                type="text"
-                                value={aiInput.category}
-                                onChange={(e) =>
-                                    setAiInput({ ...aiInput, category: e.target.value })
-                                }
-                                className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium flex items-center gap-2">
-                            <Tag className="w-4 h-4 text-muted-foreground" /> Keywords (comma
-                            separated)
-                        </label>
-                        <input
-                            type="text"
-                            value={aiInput.keywords}
-                            onChange={(e) => setAiInput({ ...aiInput, keywords: e.target.value })}
-                            placeholder="react portfolio, developer projects..."
-                            className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                        />
-                    </div>
-                </div>
-
-                <div className="px-6 py-4 border-t border-border flex justify-end gap-3 bg-muted/20">
-                    <button
-                        onClick={onClose}
-                        disabled={generateMutation.isPending}
-                        className="px-4 py-2 bg-transparent border border-input hover:bg-accent text-foreground rounded-md text-sm font-medium transition-colors disabled:opacity-50"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleGenerate}
-                        disabled={generateMutation.isPending || !aiInput.topic}
-                        className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-sm font-medium shadow-sm transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-                    >
-                        {generateMutation.isPending ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                            <Sparkles className="w-4 h-4" />
-                        )}
-                        {generateMutation.isPending ? "Generating..." : "Generate Magic"}
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 
 // PREVIEW MODAL COMPONENT
