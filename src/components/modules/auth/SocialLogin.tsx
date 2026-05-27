@@ -8,14 +8,10 @@ const SocialLogin = () => {
   const handleGoogleLogin = async () => {
     try {
       setIsLoading(true);
-      const res = await httpClient.post("/auth/sign-in/social", {
-        provider: "google",
-        callbackURL: `${envVeriables.NEXT_PUBLIC_API_URL}/auth/google/success?redirect=%2Fdashboard%2Fpatient`
-      });
-
+      const res = await httpClient.get("/auth/google");
       const data = await res.data;
       if (data.url) {
-        window.location.href = data.url;
+        window.location.href = data.url
       }
     } catch (error) {
       console.log(error);
@@ -65,3 +61,5 @@ const SocialLogin = () => {
 }
 
 export default SocialLogin;
+
+
