@@ -18,6 +18,8 @@ This frontend helps users:
 
 ---
 
+
+
 ### What this project demonstrates
 
 * End-to-end product thinking (auth → dashboard → payments)
