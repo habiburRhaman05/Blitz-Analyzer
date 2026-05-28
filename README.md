@@ -10,7 +10,7 @@ Blitz Analyzer Frontend is the client-side application of a full-stack resume an
 
 This frontend helps users:
 
-* understand resume quality quickly
+* understand resume quality 
 * view structured feedback in a simple dashboard
 * create or customize resumes using templates
 * access premium features through a smooth payment flow
