@@ -6,7 +6,7 @@ import { getTokens, isTokenExpiringSoon, refreshTokens } from './services/auth.s
 import { UserRole } from './interfaces/enums';
 
 const AUTH_ROUTES = ['/sign-in', '/sign-up'];
-const PUBLIC_ROUTES = ['/', '/about-us',"/contact-us", '/verify-email','/issues','/blogs','/pricing','/testing'];
+const PUBLIC_ROUTES = ['/', '/about-us',"/contact-us",'/reviews', '/verify-email','/issues','/blogs','/pricing','/testing'];
 
 
 export async function proxy(request: NextRequest) {
@@ -15,7 +15,7 @@ export async function proxy(request: NextRequest) {
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
 
-  // 1. Get tokens from cookies
+  // Get tokens from cookies
   let { accessToken, refreshToken } = await getTokens(request);
   const signInUrl = new URL('/sign-in', request.url);
 
@@ -38,17 +38,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 3. Public routes are always allowed
+ 
   if (isPublicRoute) {
     return NextResponse.next();
   }
 
-  // 4. Protection: No tokens at all → redirect to sign‑in
   if (!accessToken && !refreshToken) {
     return NextResponse.redirect(signInUrl);
   }
 
-  // 5. Token Refresh Logic
+
   const needsRefresh = !accessToken || (await isTokenExpiringSoon(accessToken));
   let newAccessToken: string | undefined;
   let newRefreshToken: string | undefined;
@@ -65,7 +64,6 @@ export async function proxy(request: NextRequest) {
       
       accessToken = newAccessToken; 
     } catch (error) {
-      // Refresh failed (e.g., refresh token expired) → clear cookies and redirect
       const response = NextResponse.redirect(signInUrl);
       response.cookies.delete('accessToken');
       response.cookies.delete('refreshToken');
@@ -73,7 +71,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // 6. Validate final access token
+
   if (!accessToken) return NextResponse.redirect(signInUrl);
 
   let userData;
@@ -86,7 +84,7 @@ export async function proxy(request: NextRequest) {
   const userRole = userData?.user?.role as UserRole | undefined;
 console.log("role",userRole,userData);
 
-  // 7. Role‑based Access Control (RBAC)
+ 
    if (pathname.startsWith('/moderator') && userRole !== UserRole.MANAGER) {
     console.log("re-form-here");
     
@@ -103,8 +101,6 @@ console.log("role",userRole,userData);
 
   
  
-
-  // 8. Finalize response and set refreshed cookies if necessary
   const response = NextResponse.next();
 
   if (newAccessToken) {
