@@ -1,11 +1,10 @@
 import IndustryIssueTracker from '@/components/modules/issue/IssueListing'
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
 
 const IssuePage = () => {
   return (
     <Suspense>
-
-      <IndustryIssueTracker/>
+      <IndustryIssueTracker />
     </Suspense>
   )
 }
