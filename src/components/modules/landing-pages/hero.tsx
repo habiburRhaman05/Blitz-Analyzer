@@ -96,15 +96,16 @@ export function HeroSection() {
               <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
             </Button>
             
+            <Link  href={"/sign-up"}>
             <Button 
               variant="ghost" 
               size="lg"
               asChild
               className="h-14 px-8 rounded-full font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-blue-700"
             >
-              <Link  href={"/sign-up"}>
-              Create Resume</Link>
+              Create Resume
             </Button>
+              </Link>
           </motion.div>
 
           {/* 6. Dashboard Preview with Floating Animation */}
