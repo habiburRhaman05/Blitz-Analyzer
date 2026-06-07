@@ -11,6 +11,7 @@ import {
   Zap 
 } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 const features = [
   {
@@ -97,7 +98,7 @@ export function ResumeFeaturesSection() {
             </div>
 
             <Button className="h-12 px-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-2 group">
-              Start Building <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <Link href={"/sign-up"}  className={"flex items-center gap-2"}>  Start Building <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></Link>
             </Button>
           </motion.div>
 

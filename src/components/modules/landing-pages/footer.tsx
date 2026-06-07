@@ -8,6 +8,7 @@ import Logo from "@/components/global/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import NewsletterForm from "./NewsletterForm";
 
 const footerLinks = {
   Tools: [
@@ -74,25 +75,11 @@ export function Footer() {
                <Send className="w-24 h-24 -rotate-12 text-primary" />
             </div>
 
-            <div className="relative z-10 space-y-4">
-              <h4 className="text-xl font-bold tracking-tight">Stay ahead of the curve.</h4>
-              <p className="text-muted-foreground text-sm max-w-sm">
-                Get monthly engineering career tips and AI automation workflows delivered to your inbox.
-              </p>
-              <form onSubmit={(e) => e.preventDefault()} className="flex flex-col sm:flex-row gap-2 max-w-md">
-                <Input 
-                  placeholder="Enter your work email" 
-                  className="bg-background border-border focus:ring-1 focus:ring-primary rounded-xl h-11"
-                />
-                <Button className="bg-primary text-primary-foreground hover:opacity-90 rounded-xl px-6 h-11 transition-all active:scale-95">
-                  Join
-                </Button>
-              </form>
-            </div>
+            <NewsletterForm/>
           </div>
         </div>
 
-        {/* MIDDLE: Links Grid */}
+      
         <div className="py-12 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-10 border-t border-border">
           {Object.entries(footerLinks).map(([title, links]) => (
             <div key={title} className="space-y-5">
@@ -116,7 +103,7 @@ export function Footer() {
           ))}
         </div>
 
-        {/* BOTTOM: Final Credits */}
+     
         <div className="py-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-6 text-xs text-muted-foreground font-medium">
             <p>&copy; {currentYear} Blitz Analyzer. Built by Habib.</p>
@@ -138,7 +125,7 @@ export function Footer() {
   );
 }
 
-// --- Helper Component ---
+
 function SocialIcon({ href, icon }: { href: string; icon: React.ReactNode }) {
   return (
     <a 

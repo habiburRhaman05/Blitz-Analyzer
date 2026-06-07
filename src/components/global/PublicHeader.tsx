@@ -42,7 +42,7 @@ export default function PublicHeader() {
     { label: "Analyzer", path: "/analysis" },
     { label: "Pricing", path: "/pricing" },
     { label: "Reviews", path: "/reviews" },
-    { label: "Blogs", path: "/blog" },
+    { label: "Blogs", path: "/blogs" },
     { label: "Issues", path: "/issues" },
     { label: "About", path: "/about-us" },
     { label: "Contact", path: "/contact-us" },

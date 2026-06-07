@@ -8,7 +8,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ChevronLeft, 
   Mail, 
-  Phone, 
   Send, 
   CheckCircle2, 
   Loader2, 
@@ -18,23 +17,45 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea"; // Assuming you have a textarea component
+import { Textarea } from "@/components/ui/textarea"; 
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
-// 1. Define Validation Schema
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid business email"),
   subject: z.string().min(5, "Subject is too short"),
-  message: z.string().min(10, "Tell us a bit more about your needs"),
-  privacy: z.literal(true, {
-    errorMap: () => ({ message: "You must accept the privacy policy" }),
-  }),
+  message: z.string().min(10, "Tell us a bit more about your needs")
 });
 
 type ContactFormValues = z.infer<typeof contactSchema>;
+
+function FormGroup({ label, children, error }: { label: string; children: React.ReactNode; error?: string }) {
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">{label}</label>
+      {children}
+      {error && <p className="text-xs text-red-500 font-medium ml-1">{error}</p>}
+    </div>
+  );
+}
+
+function ContactInfoCard({ icon, title, value, href }: { icon: React.ReactNode; title: string; value: string; href?: string }) {
+  const Content = (
+    <div className="flex items-center gap-4 group cursor-pointer">
+      <div className="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-900 border border-border group-hover:bg-blue-600 group-hover:text-white transition-all">
+        {icon}
+      </div>
+      <div>
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{title}</p>
+        <p className="text-slate-900 dark:text-white font-semibold">{value}</p>
+      </div>
+    </div>
+  );
+
+  return href ? <a href={href} className="block">{Content}</a> : Content;
+}
+
 
 export default function ContactSection() {
   const [isPending, setIsPending] = useState(false);
@@ -51,22 +72,24 @@ export default function ContactSection() {
 
   const onSubmit = async (data: ContactFormValues) => {
     setIsPending(true);
-    // Simulate API Call
+   
     await new Promise((resolve) => setTimeout(resolve, 2000));
     console.log("Form Data:", data);
     setIsPending(false);
     setIsSuccess(true);
     reset();
+    
+   
     setTimeout(() => setIsSuccess(false), 5000);
   };
 
   return (
     <section className="relative w-full bg-white dark:bg-[#030303] py-20 overflow-hidden">
-      {/* Background Decorative Element */}
+   
       <div className="absolute top-0 right-0 -z-10 w-1/2 h-full bg-blue-50/50 dark:bg-blue-500/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="container max-w-[1200px] mx-auto px-4">
-        {/* Navigation */}
+      
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -132,15 +155,17 @@ export default function ContactSection() {
                     <FormGroup label="Full Name" error={errors.name?.message}>
                       <Input 
                         {...register("name")} 
+                        disabled={isPending || isSuccess}
                         placeholder="John Doe" 
-                        className={cn("h-12 bg-slate-50 dark:bg-slate-900", errors.name && "border-red-500")}
+                        className={cn("h-12 bg-slate-50 dark:bg-slate-900 focus-visible:ring-blue-500", errors.name && "border-red-500 focus-visible:ring-red-500")}
                       />
                     </FormGroup>
                     <FormGroup label="Work Email" error={errors.email?.message}>
                       <Input 
                         {...register("email")} 
+                        disabled={isPending || isSuccess}
                         placeholder="john@company.com" 
-                        className={cn("h-12 bg-slate-50 dark:bg-slate-900", errors.email && "border-red-500")}
+                        className={cn("h-12 bg-slate-50 dark:bg-slate-900 focus-visible:ring-blue-500", errors.email && "border-red-500 focus-visible:ring-red-500")}
                       />
                     </FormGroup>
                   </div>
@@ -148,44 +173,42 @@ export default function ContactSection() {
                   <FormGroup label="Subject" error={errors.subject?.message}>
                     <Input 
                       {...register("subject")} 
+                      disabled={isPending || isSuccess}
                       placeholder="Project architecture inquiry" 
-                      className={cn("h-12 bg-slate-50 dark:bg-slate-900", errors.subject && "border-red-500")}
+                      className={cn("h-12 bg-slate-50 dark:bg-slate-900 focus-visible:ring-blue-500", errors.subject && "border-red-500 focus-visible:ring-red-500")}
                     />
                   </FormGroup>
 
                   <FormGroup label="Message" error={errors.message?.message}>
                     <Textarea 
                       {...register("message")} 
+                      disabled={isPending || isSuccess}
                       placeholder="Tell us about your project goals..." 
-                      className={cn("min-h-[150px] bg-slate-50 dark:bg-slate-900 resize-none", errors.message && "border-red-500")}
+                      className={cn("min-h-[150px] bg-slate-50 dark:bg-slate-900 resize-none focus-visible:ring-blue-500", errors.message && "border-red-500 focus-visible:ring-red-500")}
                     />
                   </FormGroup>
 
-                  <div className="flex items-start gap-3 py-2">
-                    <Checkbox id="privacy" {...register("privacy")} />
-                    <div className="grid gap-1.5 leading-none">
-                      <label htmlFor="privacy" className="text-sm text-muted-foreground font-medium cursor-pointer">
-                        I agree to the <Link href="/privacy" className="text-blue-500 hover:underline">Privacy Policy</Link>
-                      </label>
-                      {errors.privacy && <p className="text-xs text-red-500 font-medium">{errors.privacy.message}</p>}
-                    </div>
-                  </div>
-
                   <Button 
-                    disabled={isPending} 
-                    className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-lg font-bold transition-all active:scale-[0.98]"
+                    type="submit"
+                    disabled={isPending || isSuccess} 
+                    className={cn(
+                      "w-full h-14 text-white rounded-xl text-lg font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2",
+                      isSuccess 
+                        ? "bg-emerald-600 hover:bg-emerald-600 cursor-default" 
+                        : "bg-blue-600 hover:bg-blue-700"
+                    )}
                   >
                     <AnimatePresence mode="wait">
                       {isPending ? (
-                        <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
+                        <motion.div key="loading" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="flex items-center gap-2">
                           <Loader2 className="w-5 h-5 animate-spin" /> Sending...
                         </motion.div>
                       ) : isSuccess ? (
-                        <motion.div key="success" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
+                        <motion.div key="success" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="flex items-center gap-2">
                           <CheckCircle2 className="w-5 h-5" /> Message Sent
                         </motion.div>
                       ) : (
-                        <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
+                        <motion.div key="idle" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="flex items-center gap-2">
                           Send Message <Send className="w-4 h-4" />
                         </motion.div>
                       )}
@@ -200,32 +223,4 @@ export default function ContactSection() {
       </div>
     </section>
   );
-}
-
-// --- Helper Components ---
-
-function FormGroup({ label, children, error }: { label: string; children: React.ReactNode; error?: string }) {
-  return (
-    <div className="space-y-2">
-      <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">{label}</label>
-      {children}
-      {error && <p className="text-xs text-red-500 font-medium ml-1">{error}</p>}
-    </div>
-  );
-}
-
-function ContactInfoCard({ icon, title, value, href }: { icon: any; title: string; value: string; href?: string }) {
-  const Content = (
-    <div className="flex items-center gap-4 group cursor-pointer">
-      <div className="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-900 border border-border group-hover:bg-blue-600 group-hover:text-white transition-all">
-        {icon}
-      </div>
-      <div>
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{title}</p>
-        <p className="text-slate-900 dark:text-white font-semibold">{value}</p>
-      </div>
-    </div>
-  );
-
-  return href ? <a href={href}>{Content}</a> : Content;
 }

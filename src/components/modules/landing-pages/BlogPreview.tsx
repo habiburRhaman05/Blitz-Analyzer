@@ -203,7 +203,7 @@ export function BlogPreviewSection() {
             variant="outline"
             className="border-2 border-slate-900/20 dark:border-white/20 text-slate-900 dark:text-white px-8 py-2 rounded-full font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 flex items-center gap-2 backdrop-blur-sm"
           >
-            <Link href="/blog">
+            <Link href="/blogs">
               View All Posts
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>

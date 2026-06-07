@@ -14,6 +14,7 @@ import {
   ArrowRight
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 const coreFeatures = [
   {
@@ -148,11 +149,13 @@ const ProductHighlight = () => {
                 <h4 className="text-2xl font-black text-white leading-tight">Claim Your 10 Free AI Credits</h4>
                 <p className="text-blue-100/80 text-sm mt-1">Get started instantly with full AI analysis on us.</p>
               </div>
-              <Button 
-                className="relative z-10 bg-white hover:bg-slate-100 text-blue-600 font-bold px-8 h-12 rounded-full shadow-lg transition-transform active:scale-95"
-              >
-                Sign Up & Claim <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
+             <Link href="/sign-up" passHref legacyBehavior>
+  <Button 
+    className="relative z-10 bg-white hover:bg-slate-100 text-blue-600 font-bold px-8 h-12 rounded-full shadow-lg transition-transform active:scale-95"
+  >
+    Sign Up & Claim <ArrowRight className="ml-2 w-4 h-4" />
+  </Button>
+</Link>
               {/* Animated glow bg */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[60px] rounded-full -translate-y-1/2 translate-x-1/2" />
             </motion.div>

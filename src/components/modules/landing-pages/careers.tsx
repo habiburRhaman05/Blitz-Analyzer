@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ChevronRight, Mail, Briefcase, Star, Globe, TrendingUp } from 'lucide-react'
+import WaitlistForm from './WaitlistForm'
 
 export function CareersSection() {
   return (
@@ -41,21 +42,7 @@ export function CareersSection() {
             </div>
 
             {/* Premium Newsletter/Alert Form */}
-            <div className="space-y-4 max-w-md">
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                <Mail className="w-4 h-4" /> Get notified about new positions
-              </p>
-              <div className="relative group">
-                <Input
-                  type="email"
-                  placeholder="name@company.com"
-                  className="h-14 pl-5 pr-32 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border-slate-200 dark:border-white/10 focus:ring-2 focus:ring-blue-500 transition-all outline-none"
-                />
-                <Button className="absolute right-1.5 top-1.5 h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-all">
-                  Join Waitlist
-                </Button>
-              </div>
-            </div>
+           <WaitlistForm/>
 
             {/* Quick Benefits Stats */}
             <div className="flex gap-8 pt-4">

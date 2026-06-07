@@ -99,9 +99,11 @@ export function HeroSection() {
             <Button 
               variant="ghost" 
               size="lg"
+              asChild
               className="h-14 px-8 rounded-full font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-blue-700"
             >
-              Live Demo
+              <Link  href={"/sign-up"}>
+              Create Resume</Link>
             </Button>
           </motion.div>
 
