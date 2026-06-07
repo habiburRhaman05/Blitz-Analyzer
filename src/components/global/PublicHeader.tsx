@@ -15,6 +15,7 @@ import Logo from "@/components/global/Logo";
 import { UserRole } from "@/interfaces/enums";
 import UserProfile from "../modules/auth/UserProfilePopup";
 import CreditWallet from "../modules/user/UserCreditCard";
+import { ModeToggle } from "./ModeToggle";
 
 export default function PublicHeader() {
   const pathname = usePathname();
@@ -98,14 +99,7 @@ export default function PublicHeader() {
           <div className="flex items-center gap-1.5 md:gap-3">
             
             {/* Theme Toggle - Always Visible */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 rounded-xl border border-transparent hover:border-border"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            >
-              {theme === "dark" ? <Sun className="h-4.5 w-4.5 text-yellow-500" /> : <Moon className="h-4.5 w-4.5 text-blue-600" />}
-            </Button>
+          <ModeToggle/>
 
             {/* Auth Section - Always Visible */}
             <div className="flex items-center gap-2">
