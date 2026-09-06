@@ -1,13 +1,33 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-
-import { decodeToken } from './lib/token';
-import { getTokens, isTokenExpiringSoon, refreshTokens } from './services/auth.services';
-import { UserRole } from './interfaces/enums';
+import { UserRole, UserStatus } from './interfaces/enums';
 
 const AUTH_ROUTES = ['/sign-in', '/sign-up'];
-const PUBLIC_ROUTES = ['/', '/about-us',"/contact-us",'/reviews', '/verify-email','/issues','/blogs','/pricing','/testing'];
+const PUBLIC_ROUTES = ['/', '/about-us', "/contact-us", '/reviews', '/verify-email', '/issues', '/blogs', '/pricing', '/testing'];
 
+type SessionUser = {
+  role: UserRole;
+  status?: UserStatus;
+  isDeleted?: boolean;
+};
+
+// Single source of truth for auth: ask the backend's better-auth session
+// endpoint directly, instead of decoding a locally-issued token.
+async function getSessionUser(cookie: string): Promise<SessionUser | null> {
+  try {
+    const res = await fetch(`${process.env.API_URL}/api/auth/get-session`, {
+      headers: { cookie },
+      cache: 'no-store',
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    return data?.user ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -15,123 +35,42 @@ export async function proxy(request: NextRequest) {
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
 
-  // Get tokens from cookies
-  let { accessToken, refreshToken } = await getTokens(request);
-  const signInUrl = new URL('/sign-in', request.url);
-
- 
-  if (isAuthRoute) {
-    if (accessToken) {
-      try {
-        const userData = await decodeToken(accessToken);
-        if (userData?.user) {
-          const userRole = userData.user.role as UserRole;
-          console.log(userRole);
-          
-          const redirectPath = userRole === UserRole.ADMIN ? '/admin/dashboard' : userRole === UserRole.MANAGER ? '/moderator/dashboard' : '/dashboard';
-          return NextResponse.redirect(new URL(redirectPath, request.url));
-        }
-      } catch (e) {
-        // Token is invalid/expired, let them stay on the sign-in page
-      }
-    }
-    return NextResponse.next();
-  }
-
- 
   if (isPublicRoute) {
     return NextResponse.next();
   }
 
-  if (!accessToken && !refreshToken) {
+  const cookie = request.headers.get('cookie') ?? '';
+  const user = cookie ? await getSessionUser(cookie) : null;
+
+  if (isAuthRoute) {
+    if (user) {
+      const redirectPath = user.role === UserRole.ADMIN
+        ? '/admin/dashboard'
+        : user.role === UserRole.MANAGER
+          ? '/moderator/dashboard'
+          : '/dashboard';
+      return NextResponse.redirect(new URL(redirectPath, request.url));
+    }
+    return NextResponse.next();
+  }
+
+  const signInUrl = new URL('/sign-in', request.url);
+
+  if (!user || user.status === UserStatus.BANNED || user.status === UserStatus.DELETED || user.isDeleted) {
     return NextResponse.redirect(signInUrl);
   }
 
-
-  const needsRefresh = !accessToken || (await isTokenExpiringSoon(accessToken));
-  let newAccessToken: string | undefined;
-  let newRefreshToken: string | undefined;
-  let newSessionToken: string | undefined;
-
-  if (needsRefresh && refreshToken) {
-    try {
-      const refreshResponse = await refreshTokens(refreshToken, process.env.API_URL!);
-      const { data } = refreshResponse;
-      
-      newAccessToken = data.accessToken;
-      newRefreshToken = data.refreshToken;
-      newSessionToken = data.sessionToken;
-      
-      accessToken = newAccessToken; 
-    } catch (error) {
-      const response = NextResponse.redirect(signInUrl);
-      response.cookies.delete('accessToken');
-      response.cookies.delete('refreshToken');
-      return response;
-    }
-  }
-
-
-  if (!accessToken) return NextResponse.redirect(signInUrl);
-
-  let userData;
-  try {
-    userData = await decodeToken(accessToken);
-  } catch {
-    return NextResponse.redirect(signInUrl);
-  }
-
-  const userRole = userData?.user?.role as UserRole | undefined;
-console.log("role",userRole,userData);
-
- 
-   if (pathname.startsWith('/moderator') && userRole !== UserRole.MANAGER) {
-    console.log("re-form-here");
-    
+  if (pathname.startsWith('/moderator') && user.role !== UserRole.MANAGER) {
     return NextResponse.redirect(new URL('/unauthorized', request.url));
   }
-  if (pathname.startsWith('/admin') && userRole !== UserRole.ADMIN) {
+  if (pathname.startsWith('/admin') && user.role !== UserRole.ADMIN) {
     return NextResponse.redirect(new URL('/unauthorized', request.url));
   }
-  if (pathname.startsWith('/dashboard') && userRole !== UserRole.USER) {
-    console.log("re-form-here user");
-
+  if (pathname.startsWith('/dashboard') && user.role !== UserRole.USER) {
     return NextResponse.redirect(new URL('/unauthorized', request.url));
   }
 
-  
- 
-  const response = NextResponse.next();
-
-  if (newAccessToken) {
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      path: '/',
-      sameSite: 'lax' as const, 
-    };
-
-    response.cookies.set('accessToken', newAccessToken, { 
-        ...cookieOptions, 
-        maxAge: 60 * 30 
-    });
-
-    if (newSessionToken) {
-      response.cookies.set('better-auth.session_token', newSessionToken, { 
-        ...cookieOptions, 
-        maxAge: 60 * 30 
-    });
-    }
-    
-    if (newRefreshToken) {
-      response.cookies.set('refreshToken', newRefreshToken, { 
-        ...cookieOptions, 
-        maxAge: 60 * 60 * 24 * 30 
-    });
-    }
-  }
-
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {

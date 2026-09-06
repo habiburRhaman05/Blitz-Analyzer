@@ -13,7 +13,7 @@ export type signUpPayloadType = {
 }
 export type ILoginResponse = {
    success:boolean;message:string;data:{
-    accessToken:string, refreshToken:string, sessionToken:string,user:IUser
+    sessionToken:string,user:IUser
    }
 }
 
