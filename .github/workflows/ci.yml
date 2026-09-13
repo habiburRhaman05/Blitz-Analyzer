@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  # Informational: this repo has never had a working lint setup until
+  # now (Next 16 removed `next lint`), and tsc surfaces two pre-existing
+  # syntax errors unrelated to any given change. Runs on every PR either
+  # way so the trend stays visible.
+  typecheck:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run typecheck
+
+  lint:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run lint
+
+  # Blocking. See scripts/audit-check.sh, everything ignored there is
+  # build-tool-chain only (tailwind/postcss/eslint), never shipped to
+  # the browser.
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run audit:check
+
+  # Blocking. next build is this app's real smoke test: it compiles every
+  # page and route, so a broken import or a page that can't compile fails
+  # here instead of at deploy time.
+  build:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+      API_URL: http://localhost:8000/api/v1
+      APP_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run build
