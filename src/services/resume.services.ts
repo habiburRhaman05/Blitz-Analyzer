@@ -49,6 +49,30 @@ export const deleteResume  = async (resumeId:string) =>{
 
 
 
+export const uploadResumeImage = async (formData: FormData) => {
+  const cookieStore = await cookies()
+  try {
+    const response = await httpClient.post("/upload-media/upload-images", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        "cookie": cookieStore.toString(),
+      },
+    })
+
+    const url = response.data?.images?.[0]?.url
+    if (!url) {
+      return { success: false, message: "Upload failed - no file URL returned." }
+    }
+
+    return { success: true, data: url }
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error?.response?.data?.message || "Upload failed. Please try again.",
+    }
+  }
+}
+
 export const downloadResumeHandler = async (builderId, retryCount = 0) => {
   const cookieStore = await cookies()
   const MAX_RETRIES = 2

@@ -277,7 +277,7 @@ const { data, isLoading, isError, error, refetch } = useQuery<ApiResponse>({
                 className="rounded-full"
                 asChild
               >
-               <Link href={"/dashboard/templates"}>
+               <Link href={"/templates"}>
                 Create Resume
                </Link>
               </Button>

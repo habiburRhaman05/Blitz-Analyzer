@@ -39,13 +39,22 @@ interface TemplateData {
   price: number;
   htmlLayout: string;
   sections: string[];
-  descriptions: {
-    core_details: string;
-    targetUser: string;
-  };
+  category?: string | null;
+  descriptions: unknown;
 }
 
-const categories = ["all", "professional", "creative", "simple", "modern"] as const;
+// `descriptions` shape varies (rich admin-editor object, plain string, or a
+// simpler { summary } object) - never render it directly, see
+// TemplateDetails.tsx for why.
+function getPrimaryDescription(descriptions: unknown): string {
+  if (typeof descriptions === "string") return descriptions;
+  if (descriptions && typeof descriptions === "object") {
+    const d = descriptions as Record<string, unknown>;
+    if (typeof d.core_details === "string") return d.core_details;
+    if (typeof d.summary === "string") return d.summary;
+  }
+  return "";
+}
 
 const ITEMS_PER_PAGE = 8;
 
@@ -80,18 +89,27 @@ export default function CreateResumeWrapper() {
 
   const templates: TemplateData[] | any = data?.data || [];
 
+  // Category list is derived from whatever templates actually exist, not
+  // hardcoded - a new category added in the admin editor shows up here
+  // automatically, no code change needed.
+  const categories = useMemo(() => {
+    const found = new Set<string>();
+    templates.forEach((t: TemplateData) => { if (t.category) found.add(t.category); });
+    return ["all", ...Array.from(found).sort()];
+  }, [templates]);
+
   // --- Filtering, Sorting & Pagination Logic ---
   const filtered = useMemo(() => {
     let items = templates.filter((t:TemplateData) => {
-      const matchesCategory = category === "all" || t.slug.includes(category) || t.name.toLowerCase().includes(category);
-      const matchesPremium = 
-        showPremium === "all" || 
-        (showPremium === "free" && !t.isPremium) || 
+      const matchesCategory = category === "all" || t.category === category;
+      const matchesPremium =
+        showPremium === "all" ||
+        (showPremium === "free" && !t.isPremium) ||
         (showPremium === "premium" && t.isPremium);
-      const matchesSearch = searchQuery === "" || 
+      const matchesSearch = searchQuery === "" ||
         t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.descriptions.core_details.toLowerCase().includes(searchQuery.toLowerCase());
-      
+        getPrimaryDescription(t.descriptions).toLowerCase().includes(searchQuery.toLowerCase());
+
       return matchesCategory && matchesPremium && matchesSearch;
     });
 
@@ -117,7 +135,7 @@ export default function CreateResumeWrapper() {
   };
 
   const handleSelectTemplate = (id: string) => {
-    router.push(`/dashboard/templates/${id}?mode=template`);
+    router.push(`/templates/${id}`);
   };
 
 
@@ -165,7 +183,7 @@ export default function CreateResumeWrapper() {
                 onClick={() => { setCategory(cat); handleFilterChange(); }}
                 className={`rounded-full px-5 ${category === cat ? "bg-primary shadow-md" : ""}`}
               >
-                {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                {cat.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
               </Button>
             ))}
           </div>
@@ -267,7 +285,7 @@ export default function CreateResumeWrapper() {
                     <div className="p-5 flex-1 flex flex-col">
                       <h3 className="text-lg font-bold group-hover:text-primary transition-colors mb-1">{template.name}</h3>
                       <p className="text-xs text-muted-foreground line-clamp-2 mb-4">
-                        {template.descriptions.core_details}
+                        {getPrimaryDescription(template.descriptions)}
                       </p>
                       
                       <div className="mt-auto pt-4 border-t border-border flex items-center justify-between">

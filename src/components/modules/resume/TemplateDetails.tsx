@@ -46,6 +46,21 @@ interface TemplateDetailsProps {
   id: string;
 }
 
+// `descriptions` shape varies by how a template was authored (rich admin-
+// editor object with core_details/whyBest/benefits, a plain string, or a
+// simpler { summary } object) - never render the raw value directly, or an
+// object with no matching case crashes the whole page ("Objects are not
+// valid as a React child").
+function getPrimaryDescription(descriptions: unknown): string {
+  if (typeof descriptions === "string") return descriptions;
+  if (descriptions && typeof descriptions === "object") {
+    const d = descriptions as Record<string, unknown>;
+    if (typeof d.core_details === "string") return d.core_details;
+    if (typeof d.summary === "string") return d.summary;
+  }
+  return "";
+}
+
 const TemplateDetails = ({ id }: TemplateDetailsProps) => {
   const router = useRouter();
   const {user} = useUser()
@@ -67,17 +82,25 @@ console.log(data);
     method:"POST"
   })
   // --- Handlers ---
-  const handleUseTemplateClick =async () => {
-    if(user && user.wallet.balance < 10){
-  setShowLowCreditAlert(true)
-return
-}
-   const result = await initlizeResumeMutation.mutateAsync({
-    templateId:id
- })
- 
-router.push(`/dashboard/templates/${id}/builder/${result.data.id}`)
-  
+  const handleUseTemplateClick = async () => {
+    // Anonymous visitor (this page is public) - send them to sign in first,
+    // then back here to pick up where they left off.
+    if (!user) {
+      router.push(`/sign-in?redirect=${encodeURIComponent(`/templates/${id}`)}`);
+      return;
+    }
+
+    if (template?.isPremium && user.wallet.balance < template.price) {
+      setShowLowCreditAlert(true);
+      return;
+    }
+
+    const result = await initlizeResumeMutation.mutateAsync({
+      templateId: id
+    })
+
+    router.push(`/dashboard/templates/${id}/builder/${result.data.id}`)
+
   };
 
 
@@ -165,7 +188,7 @@ router.push(`/dashboard/templates/${id}/builder/${result.data.id}`)
               </Badge>
               <h1 className="text-5xl font-bold tracking-tighter">{template.name}</h1>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                {template.descriptions.core_details}
+                {getPrimaryDescription(template.descriptions)}
               </p>
             </section>
 
@@ -206,7 +229,7 @@ router.push(`/dashboard/templates/${id}/builder/${result.data.id}`)
                  {template.descriptions.whichNeedToUseIt}
               </div>
             </section>
-          </> :            <section className="space-y-6">{template.descriptions}</section>
+          </> :            <section className="space-y-6">{getPrimaryDescription(template.descriptions)}</section>
 }
           
         
@@ -240,7 +263,7 @@ router.push(`/dashboard/templates/${id}/builder/${result.data.id}`)
             </div>
             <AlertDialogTitle className="text-2xl">Insufficient Credits</AlertDialogTitle>
             <AlertDialogDescription className="text-base">
-              You need <span className="font-bold">10 credits</span> to unlock this template. 
+              You need <span className="font-bold">{template?.price} credits</span> to unlock this template.
               Your current balance is <span className="font-bold text-destructive">{user?.wallet?.balance} credits</span>.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -377,7 +400,7 @@ function RelatedTemplates({ currentId }: { currentId: string }) {
           <motion.div
             key={t.id}
             whileHover={{ y: -4 }}
-            onClick={() => router.push(`/dashboard/templates/${t.id}?mode=template`)}
+            onClick={() => router.push(`/templates/${t.id}`)}
             className="group cursor-pointer rounded-2xl border overflow-hidden bg-card hover:border-primary/50 hover:shadow-xl transition-all"
           >
             <div className="relative aspect-[3/4] bg-muted overflow-hidden">

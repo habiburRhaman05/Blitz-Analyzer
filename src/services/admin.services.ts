@@ -85,4 +85,14 @@ headers: {
   })
   return data
 }
+export const getPopularTemplatesPublic = async (limit = 6)=>{
+    const cookieStore = await cookies()
+
+  const {data} = await httpClient.get(`/template/popular?limit=${limit}`,{
+headers: {
+        "cookie": cookieStore.toString()
+      }
+  })
+  return data
+}
 

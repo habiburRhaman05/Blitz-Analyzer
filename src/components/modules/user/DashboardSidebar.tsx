@@ -42,7 +42,7 @@ const NAVIGATION_CONFIG = {
   USER: [
     { path: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
     { path: "/dashboard/resumes", label: "My Resumes", icon: FilePlus },
-    { path: "/dashboard/templates", label: "Templates", icon: LucideBookTemplate },
+    { path: "/templates", label: "Templates", icon: LucideBookTemplate },
     { path: "/dashboard/history", label: "Analysis History", icon: History },
     { path: "/dashboard/profile", label: "Profile", icon: User },
     { path: "/dashboard/payments", label: "Payments History", icon: User },

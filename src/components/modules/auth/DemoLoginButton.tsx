@@ -33,7 +33,8 @@ const DemoLoginButton = ({login,isLoading}) => {
 
     // Triggered automatically when a role is selected from the dropdown
     async function handleDemoSelect(role: keyof typeof demoLogin) {
-       await login(demoLogin[role])
+      const res = await login(demoLogin[role])
+      console.log(res)
     }
 
     return (

@@ -28,17 +28,24 @@ export async function serverApi(path: string, options: RequestInit = {}) {
     credentials: "include" as const,
   };
 
+  let res: Response;
   try {
-    const res = await fetch(`${process.env.API_URL}${path}`, fetchOptions)
+    res = await fetch(`${process.env.API_URL}${path}`, fetchOptions);
+  } catch (error: any) {
+    return { success: false, message: error?.message || "Network error - please try again" };
+  }
 
-    if (res.status === 401) {
-      redirect("/sign-in")
-    }
+  // redirect() throws Next's own internal navigation signal - it must stay
+  // outside any try/catch that could swallow it (same class of bug as the
+  // "Dynamic server usage" bailout: catching indiscriminately breaks it).
+  if (res.status === 401) {
+    redirect("/sign-in")
+  }
 
+  try {
     const data = await res.json()
-
     return JSON.parse(JSON.stringify(data));
-  } catch (error) {
-    console.log("server api error", error);
+  } catch {
+    return { success: false, message: "Unexpected response from server" };
   }
 }

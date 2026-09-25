@@ -41,6 +41,7 @@ export default function PublicHeader() {
   const navLinks = [
     { label: "Home", path: "/" },
     { label: "Analyzer", path: "/analysis" },
+    { label: "Templates", path: "/templates" },
     { label: "Pricing", path: "/pricing" },
     { label: "Reviews", path: "/reviews" },
     { label: "Blogs", path: "/blogs" },

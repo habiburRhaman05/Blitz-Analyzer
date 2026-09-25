@@ -12,6 +12,7 @@ import {
 import {
   Bold,
   Italic,
+  Link2,
   List,
   ListOrdered,
   Plus,
@@ -19,11 +20,13 @@ import {
   Upload,
   X,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { uploadResumeImage } from "@/services/resume.services";
 import {
   Select,
   SelectContent,
@@ -181,6 +184,12 @@ const RichTextEditor = ({
   );
 };
 
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // must match backend multer.config.ts limit
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+// Real upload (Cloudinary via the backend) or a pasted URL - never a base64
+// data URL. Storing base64 in resumeData would bloat every Postgres row and
+// the generated resume HTML/PDF with a multi-MB inline string per photo.
 const FileUpload = ({
   value,
   onChange,
@@ -193,58 +202,115 @@ const FileUpload = ({
   placeholder?: string;
 }) => {
   const [loading, setLoading] = useState(false);
-  const [preview, setPreview] = useState<string | null>(value || null);
+  const [mode, setMode] = useState<"upload" | "url">("upload");
+  const [urlDraft, setUrlDraft] = useState("");
+  const isImage = accept?.includes("image");
 
-  useEffect(() => {
-    setPreview(value || null);
-  }, [value]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file after an error
     if (!file) return;
 
+    if (isImage && !ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      toast.error("Only JPEG, PNG, or WEBP images are allowed.");
+      return;
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      toast.error("File is too large - max 5MB.");
+      return;
+    }
+
     setLoading(true);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = reader.result as string;
-      setPreview(base64);
-      onChange(base64);
+    try {
+      const formData = new FormData();
+      // uploadType must be appended before the file: multer/busboy parses
+      // multipart fields in stream order, so a text field appended after
+      // the file wouldn't be in req.body yet when Cloudinary storage reads it.
+      formData.append("uploadType", `resume-photo-${Date.now()}`);
+      formData.append("images", file);
+
+      const result = await uploadResumeImage(formData);
+      if (!result?.success || !result.data) {
+        toast.error(result?.message || "Upload failed. Please try again.");
+        return;
+      }
+      onChange(result.data);
+    } catch {
+      toast.error("Upload failed. Please try again.");
+    } finally {
       setLoading(false);
-    };
-    reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUseUrl = () => {
+    const trimmed = urlDraft.trim();
+    if (!trimmed) return;
+    try {
+      new URL(trimmed);
+    } catch {
+      toast.error("Enter a valid URL.");
+      return;
+    }
+    onChange(trimmed);
+    setUrlDraft("");
   };
 
   const handleRemove = () => {
-    setPreview(null);
     onChange(undefined);
+    setUrlDraft("");
   };
+
+  if (value) {
+    return (
+      <div className="relative inline-block">
+        {isImage ? (
+          <img
+            src={value}
+            alt="Preview"
+            className="max-w-full h-32 rounded-lg object-cover border"
+          />
+        ) : (
+          <div className="p-4 border rounded-lg bg-zinc-50 dark:bg-zinc-900">
+            <span className="text-sm break-all">{value}</span>
+          </div>
+        )}
+        <Button
+          type="button"
+          variant="destructive"
+          size="icon"
+          className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+          onClick={handleRemove}
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">
-      {preview ? (
-        <div className="relative inline-block">
-          {accept?.includes("image") ? (
-            <img
-              src={preview}
-              alt="Preview"
-              className="max-w-full h-32 rounded-lg object-cover border"
-            />
-          ) : (
-            <div className="p-4 border rounded-lg bg-zinc-50 dark:bg-zinc-900">
-              <span className="text-sm">File uploaded</span>
-            </div>
-          )}
-          <Button
-            type="button"
-            variant="destructive"
-            size="icon"
-            className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
-            onClick={handleRemove}
-          >
-            <X className="h-3 w-3" />
-          </Button>
-        </div>
-      ) : (
+      <div className="inline-flex rounded-lg border border-zinc-200 dark:border-zinc-700 p-0.5 bg-zinc-50 dark:bg-zinc-900">
+        <button
+          type="button"
+          onClick={() => setMode("upload")}
+          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+            mode === "upload" ? "bg-white dark:bg-zinc-800 shadow-sm" : "text-zinc-500"
+          }`}
+        >
+          Upload file
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("url")}
+          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+            mode === "url" ? "bg-white dark:bg-zinc-800 shadow-sm" : "text-zinc-500"
+          }`}
+        >
+          Paste URL
+        </button>
+      </div>
+
+      {mode === "upload" ? (
         <div className="flex items-center gap-2">
           <Button type="button" variant="outline" className="relative" disabled={loading}>
             {loading ? (
@@ -252,7 +318,7 @@ const FileUpload = ({
             ) : (
               <Upload className="h-4 w-4 mr-2" />
             )}
-            {placeholder || "Upload file"}
+            {loading ? "Uploading..." : placeholder || "Upload file"}
             <input
               type="file"
               className="absolute inset-0 opacity-0 cursor-pointer"
@@ -260,6 +326,19 @@ const FileUpload = ({
               accept={accept}
               disabled={loading}
             />
+          </Button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <Input
+            type="url"
+            value={urlDraft}
+            onChange={(e) => setUrlDraft(e.target.value)}
+            placeholder="https://example.com/photo.jpg"
+            className="h-10 rounded-lg"
+          />
+          <Button type="button" variant="outline" onClick={handleUseUrl}>
+            <Link2 className="h-4 w-4 mr-1.5" /> Use
           </Button>
         </div>
       )}

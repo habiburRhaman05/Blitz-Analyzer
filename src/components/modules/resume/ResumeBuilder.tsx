@@ -194,8 +194,8 @@ export default function PremiumResumeBuilder({
     
     if (!template?.htmlLayout) return;
 
-    if ((user?.wallet?.balance as number) < 10) {
-      toast.error("Insufficient balance. 10 credits required.");
+    if (template?.isPremium && (user?.wallet?.balance as number) < template.price) {
+      toast.error(`Insufficient balance. ${template.price} credits required.`);
       return;
     }
 
@@ -320,49 +320,68 @@ export default function PremiumResumeBuilder({
             </Button>
           )}
 
-          {/* Premium Download with Confirmation Dialog */}
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={downloadMutation.isPending}
-                className="rounded-full bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm h-9 hover:bg-zinc-50"
-              >
-                {downloadMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Download className="h-4 w-4" />
-                )}
-                <span className="ml-2 hidden sm:inline text-xs font-semibold">Generate Resume</span>
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="max-w-[400px] rounded-2xl">
-              <AlertDialogHeader>
-                <div className="mx-auto bg-amber-100 dark:bg-amber-900/30 w-14 h-14 rounded-full flex items-center justify-center mb-4">
-                  <Coins className="h-7 w-7 text-amber-600 dark:text-amber-500" />
-                </div>
-                <AlertDialogTitle className="text-center text-xl font-bold">
-                  Confirm Export
-                </AlertDialogTitle>
-                <AlertDialogDescription className="text-center text-zinc-500 dark:text-zinc-400">
-                  Exporting this premium template will deduct <span className="font-bold text-zinc-900 dark:text-zinc-100">10 Credits</span> from your balance.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter className="sm:justify-center gap-3 mt-4">
-                <AlertDialogCancel className="rounded-xl border-zinc-200 dark:border-zinc-800 text-xs">
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleGenerateResume}
-                  className="bg-zinc-900 text-white dark:bg-white dark:text-black rounded-xl hover:opacity-90 px-6 text-xs font-bold"
+          {/* Free templates generate immediately; premium templates confirm
+              the credit cost first. */}
+          {template?.isPremium ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={downloadMutation.isPending}
+                  className="rounded-full bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm h-9 hover:bg-zinc-50"
                 >
-                  Confirm & Export
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                  {downloadMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  <span className="ml-2 hidden sm:inline text-xs font-semibold">Generate Resume</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="max-w-[400px] rounded-2xl">
+                <AlertDialogHeader>
+                  <div className="mx-auto bg-amber-100 dark:bg-amber-900/30 w-14 h-14 rounded-full flex items-center justify-center mb-4">
+                    <Coins className="h-7 w-7 text-amber-600 dark:text-amber-500" />
+                  </div>
+                  <AlertDialogTitle className="text-center text-xl font-bold">
+                    Confirm Export
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-center text-zinc-500 dark:text-zinc-400">
+                    Exporting this premium template will deduct <span className="font-bold text-zinc-900 dark:text-zinc-100">{template.price} Credits</span> from your balance.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="sm:justify-center gap-3 mt-4">
+                  <AlertDialogCancel className="rounded-xl border-zinc-200 dark:border-zinc-800 text-xs">
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleGenerateResume}
+                    className="bg-zinc-900 text-white dark:bg-white dark:text-black rounded-xl hover:opacity-90 px-6 text-xs font-bold"
+                  >
+                    Confirm & Export
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={downloadMutation.isPending}
+              onClick={handleGenerateResume}
+              className="rounded-full bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm h-9 hover:bg-zinc-50"
+            >
+              {downloadMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              <span className="ml-2 hidden sm:inline text-xs font-semibold">Generate Resume</span>
+            </Button>
+          )}
         </div>
       </div>
 

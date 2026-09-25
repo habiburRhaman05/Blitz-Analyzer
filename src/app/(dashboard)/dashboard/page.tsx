@@ -48,7 +48,7 @@ interface DashboardApiResponse {
 const navItems = [
   { path: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
   { path: "/dashboard/resumes", label: "My Resumes", icon: FilePlus, exact: false },
-  { path: "/dashboard/templates", label: "Templates", icon: BookTemplate, exact: false },
+  { path: "/templates", label: "Templates", icon: BookTemplate, exact: false },
   { path: "/dashboard/history", label: "Analysis History", icon: History, exact: false },
   { path: "/dashboard/profile", label: "Profile", icon: User, exact: false },
   { path: "/dashboard/settings", label: "Settings", icon: Settings, exact: false },
@@ -277,7 +277,7 @@ const {user} = useUser()
                 </h2>
                 <div className="space-y-3">
                   <Link
-                    href="/dashboard/templates"
+                    href="/templates"
                     className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40 border border-indigo-100 dark:border-indigo-900/50 hover:shadow-md transition-all group"
                   >
                     <div className="flex items-center gap-3">

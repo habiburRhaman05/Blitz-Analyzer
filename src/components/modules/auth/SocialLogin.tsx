@@ -9,9 +9,9 @@ const SocialLogin = () => {
     try {
       setIsLoading(true);
       const res = await httpClient.get("/auth/google");
-      const data = await res.data;
-      if (data.url) {
-        window.location.href = data.url
+      const url = res.data?.data?.url;
+      if (url) {
+        window.location.href = url
       }
     } catch (error) {
       console.log(error);

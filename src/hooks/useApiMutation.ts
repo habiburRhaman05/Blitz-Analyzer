@@ -59,7 +59,13 @@ export function useApiMutation<TData = any, TVariables = any, TContext = unknown
     if(data.success){
         toast.success(finalSuccessMessage);
     }else{
-        toast.error("somethink wrong please try again");
+        // Validation failures (e.g. from validateRequest middleware) come
+        // back as { success: false, errors: ZodIssue[] } with no top-level
+        // message - surface the real reason instead of a generic string.
+        const validationMessage = Array.isArray((data as any)?.errors)
+          ? (data as any).errors[0]?.message
+          : undefined;
+        toast.error(validationMessage || (data as any)?.message || "Something went wrong. Please try again.");
     }
 
       // 2. Invalidate Queries
@@ -77,13 +83,15 @@ export function useApiMutation<TData = any, TVariables = any, TContext = unknown
 
     onError: (error: any, variables, context) => {
       // 1. Resolve Error Message
-      const apiErrorMessage = error.response?.data?.error?.message || error.response?.data?.message;
-      const finalErrorMessage = 
-        variables?.meta?.errorMessage || 
-        configError || 
-        apiErrorMessage || 
+      const validationMessage = Array.isArray(error.response?.data?.errors)
+        ? error.response.data.errors[0]?.message
+        : undefined;
+      const apiErrorMessage = validationMessage || error.response?.data?.message;
+      const finalErrorMessage =
+        variables?.meta?.errorMessage ||
+        configError ||
+        apiErrorMessage ||
         "Something went wrong.";
-alert("error")
       toast.error(finalErrorMessage, {
         description: `Error Code: ${error.response?.status || "Unknown"}`,
       });

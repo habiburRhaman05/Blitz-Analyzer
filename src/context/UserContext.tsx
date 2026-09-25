@@ -33,13 +33,14 @@ export default function UserContextWrapper({ children }: { children: React.React
   } = useQuery({
     queryKey: [cacheKey],
     queryFn: getMe,
-    retry: (failureCount, error: any) => {
-      // Don't retry on 401
-      if (error?.response?.status === 401) {
-        return false;
-      }
-      return failureCount < 3;
-    },
+    // getMe() runs as a "use server" action, so thrown errors lose their
+    // axios .response across the serialization boundary - there's no way
+    // to distinguish a 401 from any other failure here. An auth check is
+    // never worth retrying anyway (not-logged-in won't change on retry),
+    // and retrying used to leave a stale pre-login retry cycle in flight
+    // that fetchUser()'s refetch() would get entangled behind right after
+    // a successful login, stalling the dashboard redirect by ~7s.
+    retry: false,
     staleTime: 0,
   });
 

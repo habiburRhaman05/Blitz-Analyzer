@@ -36,28 +36,28 @@ export function FormPassword<T extends FieldValues>({
       render={({ field }) => (
         <FormItem>
           <FormLabel>{label}</FormLabel>
-          <FormControl>
-            <div className="relative">
+          <div className="relative">
+            <FormControl>
               <Input
                 {...field}
                 type={show ? "text" : "password"}
                 disabled={disabled}
                 placeholder={placeholder}
               />
-              <button
-                type="button"
-                onClick={() => setShow((p) => !p)}
-                disabled={disabled}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
-              >
-                {show ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </button>
-            </div>
-          </FormControl>
+            </FormControl>
+            <button
+              type="button"
+              onClick={() => setShow((p) => !p)}
+              disabled={disabled}
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+            >
+              {show ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
+          </div>
           <FormMessage />
         </FormItem>
       )}

@@ -4,6 +4,8 @@ import { UserRole, UserStatus } from './interfaces/enums';
 
 const AUTH_ROUTES = ['/sign-in', '/sign-up'];
 const PUBLIC_ROUTES = ['/', '/about-us', "/contact-us", '/reviews', '/verify-email', '/issues', '/blogs', '/pricing', '/testing'];
+// Prefix-matched public routes (covers dynamic segments, e.g. /templates/[id])
+const PUBLIC_ROUTE_PREFIXES = ['/templates'];
 
 type SessionUser = {
   role: UserRole;
@@ -13,9 +15,19 @@ type SessionUser = {
 
 // Single source of truth for auth: ask the backend's better-auth session
 // endpoint directly, instead of decoding a locally-issued token.
+//
+// better-auth's own handler is mounted at `/api/auth` on the bare origin
+// (see backend/src/app.ts: `app.use("/api/auth", toNodeHandler(auth))`),
+// separate from the versioned `/api/v1` prefix our custom REST routes use.
+// API_URL already includes `/api/v1`, so strip it before appending here -
+// appending directly produced a doubled `/api/v1/api/auth/get-session`
+// path that 404'd on every request, making this always resolve to "logged
+// out" and bounce every authenticated navigation back to /sign-in.
+const API_ORIGIN = (process.env.API_URL ?? '').replace(/\/api\/v1\/?$/, '');
+
 async function getSessionUser(cookie: string): Promise<SessionUser | null> {
   try {
-    const res = await fetch(`${process.env.API_URL}/api/auth/get-session`, {
+    const res = await fetch(`${API_ORIGIN}/api/auth/get-session`, {
       headers: { cookie },
       cache: 'no-store',
     });
@@ -33,7 +45,8 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
-  const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+  const isPublicRoute = PUBLIC_ROUTES.includes(pathname)
+    || PUBLIC_ROUTE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
   if (isPublicRoute) {
     return NextResponse.next();
