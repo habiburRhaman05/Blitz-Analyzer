@@ -109,6 +109,26 @@ const fillFields = (
   return out;
 };
 
+// Strips em/en dashes, ellipses, smart quotes and stray "AI" glyphs from every
+// generated string, so output reads like a person typed it (no "AI tells").
+const stripAiSymbols = (v: any): any => {
+  if (typeof v === "string") {
+    return v
+      .replace(/[—–]/g, "-")   // em/en dash -> hyphen
+      .replace(/…/g, "...")          // ellipsis
+      .replace(/[‘’]/g, "'")    // smart single quotes
+      .replace(/[“”]/g, '"')    // smart double quotes
+      .replace(/[•→←▸➔]/g, "") // bullets / arrows
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  }
+  if (Array.isArray(v)) return v.map(stripAiSymbols);
+  if (v && typeof v === "object") {
+    return Object.fromEntries(Object.entries(v).map(([k, val]) => [k, stripAiSymbols(val)]));
+  }
+  return v;
+};
+
 export const generateQuickFillData = (
   sections: DynamicSection[],
   answers: QuickFillAnswers
@@ -124,5 +144,5 @@ export const generateQuickFillData = (
     }
   });
 
-  return data;
+  return stripAiSymbols(data);
 };

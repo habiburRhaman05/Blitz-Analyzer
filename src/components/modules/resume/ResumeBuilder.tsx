@@ -16,7 +16,11 @@ import {
   Download,
   MonitorOff,
   Coins, // Added for credit icon
+  GripVertical,
+  Pencil,
+  Check as CheckIcon,
 } from "lucide-react";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -66,15 +70,25 @@ export default function PremiumResumeBuilder({
   const [isGenerating, setIsGenerating] = useState(false);
 
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [resumeName, setResumeName] = useState("");
+  const [editingName, setEditingName] = useState(false);
+  const [savingName, setSavingName] = useState(false);
+  const initializedRef = useRef<string | null>(null);
   const [sectionValidationMap, setSectionValidationMap] = useState<
     Record<string, { valid: boolean; count: number; fields: string[] }>
   >({});
 
   const { user } = useUser();
 
+  // refetchOnWindowFocus/Mount OFF + infinite staleTime: without this,
+  // alt-tabbing back re-fetched the template, which re-ran the reset() effect
+  // below and wiped everything the user had typed (and flashed the loader).
   const { data: apiResponse, isFetching } = useQuery({
     queryKey: [`templates-${id}`],
     queryFn: () => getAllTemplateDetailsPublic(id),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    staleTime: Infinity,
   });
 
   const template: any = apiResponse?.data;
@@ -97,21 +111,27 @@ export default function PremiumResumeBuilder({
 
   useEffect(() => {
     if (!template) return;
-    const crr =
-      template &&
-      template?.resume?.filter((res: any) => {
-        return res.id === builderId;
-      });
+    // Only hydrate the form ONCE per resume. Re-running reset() on any later
+    // template ref change would overwrite in-progress edits.
+    if (initializedRef.current === builderId) return;
 
+    const crr =
+      template?.resume?.filter((res: any) => res.id === builderId) ?? [];
+
+    const current = crr.length > 0 ? crr[0] : null;
     const normalized = normalizeResumeData(
       sections,
-      crr.length > 0 && crr[0].resumeData ? crr[0].resumeData : {}
+      current?.resumeData ? current.resumeData : {}
     );
     reset(normalized);
+    setResumeName(current?.name ?? "");
     setLastSaved(new Date());
     setCurrentStep(0);
     setReviewMode(false);
-  }, [template, reset, sections, builderId]);
+    initializedRef.current = builderId;
+    // validate loaded data so the download gate (formState.isValid) is accurate
+    void trigger();
+  }, [template, reset, sections, builderId, trigger]);
 
   const [isDesktop, setIsDesktop] = React.useState(true);
 
@@ -175,7 +195,26 @@ export default function PremiumResumeBuilder({
   const handleQuickFill = (data: Record<string, any>) => {
     reset(normalizeResumeData(sections, data));
     setLastSaved(new Date());
-    toast.success("Sample content added — edit anything you like");
+    void trigger();
+    toast.success("Sample content added. Edit anything you like.");
+  };
+
+  const handleRename = async () => {
+    const name = resumeName.trim();
+    setEditingName(false);
+    if (!name) return;
+    setSavingName(true);
+    try {
+      const result = await updateResumeName(builderId, {
+        name,
+        resumeData: formData,
+        templateId: id,
+      });
+      if (result?.success) toast.success("Resume renamed");
+      else toast.error("Could not rename resume");
+    } finally {
+      setSavingName(false);
+    }
   };
 
   const onSubmit = async (data: any) => {
@@ -212,18 +251,35 @@ export default function PremiumResumeBuilder({
 
       if (result.success) {
         setShowSuccessModal(true);
-        handleClickDownload(result.data.resumeUrl);
+        await handleClickDownload(result.data.resumeUrl, result.data.name);
       }
-    
+
   };
 
-  const handleClickDownload = (url: string) => {
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${template.slug || "resume"}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  // Fetch the PDF as a blob and save it as `resume-<name>.pdf`. The plain
+  // `<a download>` approach couldn't name a cross-origin Cloudinary file and
+  // the file had no extension, so it saved as a nameless generic "file".
+  const handleClickDownload = async (url: string, name?: string) => {
+    const safe = (name || resumeName || template.slug || "resume")
+      .toString()
+      .replace(/[^a-z0-9\-_]+/gi, "-")
+      .replace(/^-+|-+$/g, "");
+    const filename = `resume-${safe || "resume"}.pdf`;
+    try {
+      const resp = await fetch(url);
+      const blob = await resp.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      // If the blob fetch is blocked, fall back to opening the file directly.
+      window.open(url, "_blank");
+    }
   };
 
   const nextStep = async () => {
@@ -296,8 +352,47 @@ export default function PremiumResumeBuilder({
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-sm font-semibold tracking-tight">{template.name}</h1>
-            <p className="text-xs text-zinc-400 mt-0.5">SaaS Resume Builder</p>
+            {editingName ? (
+              <div className="flex items-center gap-1.5">
+                <input
+                  autoFocus
+                  value={resumeName}
+                  onChange={(e) => setResumeName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleRename();
+                    if (e.key === "Escape") setEditingName(false);
+                  }}
+                  placeholder="Resume name"
+                  className="text-sm font-semibold tracking-tight bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-blue-500 outline-none px-0.5 py-0.5 w-48"
+                />
+                <button
+                  type="button"
+                  onClick={handleRename}
+                  disabled={savingName}
+                  className="p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  title="Save name"
+                >
+                  {savingName ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <CheckIcon className="h-3.5 w-3.5 text-emerald-600" />
+                  )}
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setEditingName(true)}
+                className="group flex items-center gap-1.5 text-left"
+                title="Rename resume"
+              >
+                <h1 className="text-sm font-semibold tracking-tight truncate max-w-[220px]">
+                  {resumeName || "Untitled Resume"}
+                </h1>
+                <Pencil className="h-3 w-3 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            )}
+            <p className="text-xs text-zinc-400 mt-0.5">{template.name}</p>
           </div>
         </div>
 
@@ -343,8 +438,9 @@ export default function PremiumResumeBuilder({
                   type="button"
                   size="sm"
                   variant="outline"
-                  disabled={downloadMutation.isPending}
-                  className="rounded-full bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm h-9 hover:bg-zinc-50"
+                  disabled={downloadMutation.isPending || !formState.isValid}
+                  title={!formState.isValid ? "Fill all required fields to enable export" : undefined}
+                  className="rounded-full bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm h-9 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {downloadMutation.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -384,9 +480,10 @@ export default function PremiumResumeBuilder({
               type="button"
               size="sm"
               variant="outline"
-              disabled={downloadMutation.isPending}
+              disabled={downloadMutation.isPending || !formState.isValid}
+              title={!formState.isValid ? "Fill all required fields to enable export" : undefined}
               onClick={handleGenerateResume}
-              className="rounded-full bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm h-9 hover:bg-zinc-50"
+              className="rounded-full bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm h-9 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {downloadMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -448,11 +545,11 @@ export default function PremiumResumeBuilder({
         </nav>
       </div>
 
-      <main className="flex-1 grid grid-cols-1 lg:grid-cols-2 overflow-hidden">
-        <section
-          className={`flex flex-col bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800 overflow-hidden ${
-            showMobilePreview ? "hidden lg:flex" : "flex"
-          }`}
+      <PanelGroup direction="horizontal" className="flex-1 overflow-hidden">
+        <Panel
+          defaultSize={52}
+          minSize={32}
+          className="flex flex-col bg-white dark:bg-zinc-950 overflow-hidden"
         >
           <div
             id="form-scroll-container"
@@ -629,16 +726,20 @@ export default function PremiumResumeBuilder({
               </div>
             </div>
           </div>
-        </section>
+        </Panel>
 
-        <section
-          className={`${
-            showMobilePreview ? "flex" : "hidden"
-          } lg:flex flex-col bg-zinc-50 dark:bg-zinc-950 overflow-hidden p-4 lg:p-6`}
+        <PanelResizeHandle className="w-2 bg-zinc-200 dark:bg-zinc-800 hover:bg-blue-500 transition-colors cursor-col-resize flex items-center justify-center group">
+          <GripVertical className="h-4 w-4 text-zinc-400 group-hover:text-white" />
+        </PanelResizeHandle>
+
+        <Panel
+          defaultSize={48}
+          minSize={25}
+          className="flex flex-col bg-zinc-50 dark:bg-zinc-950 overflow-hidden p-4 lg:p-6"
         >
           <ResumePreview template={template} data={formData} />
-        </section>
-      </main>
+        </Panel>
+      </PanelGroup>
     </div>
   );
 }
