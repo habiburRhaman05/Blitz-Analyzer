@@ -41,6 +41,7 @@ import {
 } from "@/validations-schemas/auth/resume-builder.schema";
 import { SectionRenderer } from "./builder/ResumeBuilderField";
 import { ResumePreview } from "./ResumePreview";
+import { QuickFillDialog } from "./QuickFillDialog";
 import { downloadResumeHandler, updateResumeName } from "@/services/resume.services";
 import { getAllTemplateDetailsPublic } from "@/services/admin.services";
 import { useQuery } from "@tanstack/react-query";
@@ -170,6 +171,13 @@ export default function PremiumResumeBuilder({
     }
   }, [reviewMode]);
 
+  // Drops schema-shaped sample data into the form (and thus the live preview).
+  const handleQuickFill = (data: Record<string, any>) => {
+    reset(normalizeResumeData(sections, data));
+    setLastSaved(new Date());
+    toast.success("Sample content added — edit anything you like");
+  };
+
   const onSubmit = async (data: any) => {
     setIsGenerating(true);
     const result = await updateResumeName(builderId, {
@@ -294,6 +302,12 @@ export default function PremiumResumeBuilder({
         </div>
 
         <div className="flex items-center gap-3">
+          <QuickFillDialog
+            sections={sections}
+            onFilled={handleQuickFill}
+            triggerClassName="rounded-full bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm h-9 hover:bg-zinc-50"
+          />
+
           <Button
             type="button"
             variant="outline"

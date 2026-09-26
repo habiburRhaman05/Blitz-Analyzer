@@ -1,8 +1,48 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Handlebars from "handlebars";
 import { Maximize2, Minimize2, X } from "lucide-react";
+
+// Isolated Handlebars instance so registering helpers here can't leak into
+// any other Handlebars usage. Covers the helpers resume templates commonly
+// reference, plus a catch-all so an unknown helper renders empty instead of
+// hard-crashing the whole preview to a red error.
+const createResumeHbs = () => {
+  const hbs = Handlebars.create();
+
+  hbs.registerHelper("formatDate", (value: any, fmt?: any) => {
+    if (!value) return "";
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return String(value);
+    const pattern = typeof fmt === "string" ? fmt : "MMM yyyy";
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return pattern
+      .replace("yyyy", String(d.getFullYear()))
+      .replace("MMM", months[d.getMonth()] ?? "")
+      .replace("MM", String(d.getMonth() + 1).padStart(2, "0"))
+      .replace("dd", String(d.getDate()).padStart(2, "0"));
+  });
+  hbs.registerHelper("join", (arr: any, sep?: any) =>
+    Array.isArray(arr) ? arr.join(typeof sep === "string" ? sep : ", ") : ""
+  );
+  hbs.registerHelper("uppercase", (v: any) => String(v ?? "").toUpperCase());
+  hbs.registerHelper("lowercase", (v: any) => String(v ?? "").toLowerCase());
+  hbs.registerHelper("eq", (a: any, b: any) => a === b);
+  hbs.registerHelper("ifEquals", function (this: any, a: any, b: any, opts: any) {
+    return a === b ? opts.fn(this) : opts.inverse(this);
+  });
+  hbs.registerHelper("default", (v: any, fallback: any) => (v == null || v === "" ? fallback : v));
+
+  // Unknown inline `{{foo x}}` and block `{{#foo}}...{{/foo}}` helpers no
+  // longer throw - they just render nothing / their block body.
+  hbs.registerHelper("helperMissing", () => "");
+  hbs.registerHelper("blockHelperMissing", function (this: any, ctx: any, opts: any) {
+    return ctx ? opts.fn(this) : opts.inverse(this);
+  });
+
+  return hbs;
+};
 
 export const ResumePreview = ({
   template,
@@ -15,18 +55,30 @@ export const ResumePreview = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  const hbs = useMemo(() => createResumeHbs(), []);
+
   useEffect(() => {
     if (!template?.htmlLayout) return;
 
     try {
-      const compile = Handlebars.compile(template.htmlLayout);
-      const html = compile(data);
+      const compile = hbs.compile(template.htmlLayout);
+      const html = compile(data ?? {});
       setCompiledHtml(html);
-    } catch (err) {
-      console.error("Handlebars compilation error:", err);
-      setCompiledHtml("<p class='text-red-500'>Error rendering preview</p>");
+    } catch (err: any) {
+      // Surface the real reason (e.g. which helper/token failed) so it can
+      // actually be diagnosed, instead of a generic "Error rendering preview".
+      console.error("Handlebars render error:", err);
+      const msg = String(err?.message ?? err ?? "Unknown error")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+      setCompiledHtml(
+        `<div style="padding:16px;font-family:sans-serif;color:#b91c1c">
+           <strong>Error rendering preview</strong>
+           <pre style="white-space:pre-wrap;font-size:12px;color:#7f1d1d;margin-top:8px">${msg}</pre>
+         </div>`
+      );
     }
-  }, [template, data]);
+  }, [template, data, hbs]);
 
   useEffect(() => {
     if (!iframeRef.current) return;
