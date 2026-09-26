@@ -49,6 +49,34 @@ export const deleteResume  = async (resumeId:string) =>{
 
 
 
+// Forwards a browser-generated resume PDF to the backend to get a shareable
+// URL. Goes through this server action (not a direct browser call) so the
+// session cookie can be attached server-side. Only called on explicit "share".
+export const shareResumePdf = async (builderId: string, formData: FormData) => {
+  const file = formData.get("file") as File | null;
+  if (!file) return { success: false, message: "No PDF provided" };
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const FormDataNode = (await import("form-data")).default;
+  const fd = new FormDataNode();
+  fd.append("file", buffer, { filename: "resume.pdf", contentType: "application/pdf" });
+
+  const cookieStore = await cookies();
+  try {
+    const res = await httpClient.post(`/resume/${builderId}/share-pdf`, fd, {
+      headers: { ...fd.getHeaders(), cookie: cookieStore.toString() },
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
+    });
+    return { success: true, url: res.data?.data?.resumeUrl as string };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error?.response?.data?.message || "Could not create shareable link",
+    };
+  }
+};
+
 export const uploadResumeImage = async (formData: FormData) => {
   const cookieStore = await cookies()
   try {

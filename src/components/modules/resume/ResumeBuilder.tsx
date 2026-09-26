@@ -46,11 +46,13 @@ import {
 import { SectionRenderer } from "./builder/ResumeBuilderField";
 import { ResumePreview } from "./ResumePreview";
 import { QuickFillDialog } from "./QuickFillDialog";
-import { downloadResumeHandler, updateResumeName } from "@/services/resume.services";
+import { shareResumePdf, updateResumeName } from "@/services/resume.services";
 import { getAllTemplateDetailsPublic } from "@/services/admin.services";
 import { useQuery } from "@tanstack/react-query";
 import { useUser } from "@/context/UserContext";
-import { useApiMutation } from "@/hooks/useApiMutation";
+import { compileResumeHtml } from "@/lib/resumeHbs";
+import { generateResumePdf, type GeneratedPdf } from "@/lib/generateResumePdf";
+import { ResumeExportDialog } from "./ResumeExportDialog";
 
 export default function PremiumResumeBuilder({
   id,
@@ -66,8 +68,10 @@ export default function PremiumResumeBuilder({
   const [currentStep, setCurrentStep] = useState(0);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [reviewMode, setReviewMode] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [generatedPdf, setGeneratedPdf] = useState<GeneratedPdf | null>(null);
 
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [resumeName, setResumeName] = useState("");
@@ -231,14 +235,15 @@ export default function PremiumResumeBuilder({
   };
 
 
-  const downloadMutation = useApiMutation({
-    endpoint:`/resume/${builderId}/generate-download`,
-    actionName:"sdfdf",
-    actionType:"SERVER_SIDE",
-    method:"POST"
-  })
+  const exportFilename = `resume-${(resumeName || template?.slug || "resume")
+    .toString()
+    .replace(/[^a-z0-9\-_]+/gi, "-")
+    .replace(/^-+|-+$/g, "") || "resume"}.pdf`;
+
+  // Generate the PDF IN THE BROWSER (no server puppeteer, no cloud storage)
+  // and open the export dialog. Nothing is uploaded unless the user then
+  // clicks "Get shareable link".
   const handleGenerateResume = async () => {
-    
     if (!template?.htmlLayout) return;
 
     if (template?.isPremium && (user?.wallet?.balance as number) < template.price) {
@@ -246,40 +251,26 @@ export default function PremiumResumeBuilder({
       return;
     }
 
-
-      const result = await downloadMutation.mutateAsync({})
-
-      if (result.success) {
-        setShowSuccessModal(true);
-        await handleClickDownload(result.data.resumeUrl, result.data.name);
-      }
-
+    setIsExporting(true);
+    try {
+      const html = compileResumeHtml(template.htmlLayout, formData);
+      const pdf = await generateResumePdf(html, exportFilename);
+      setGeneratedPdf(pdf);
+      setExportOpen(true);
+    } catch (err: any) {
+      console.error("PDF generation failed:", err);
+      toast.error("Could not generate the PDF. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
-  // Fetch the PDF as a blob and save it as `resume-<name>.pdf`. The plain
-  // `<a download>` approach couldn't name a cross-origin Cloudinary file and
-  // the file had no extension, so it saved as a nameless generic "file".
-  const handleClickDownload = async (url: string, name?: string) => {
-    const safe = (name || resumeName || template.slug || "resume")
-      .toString()
-      .replace(/[^a-z0-9\-_]+/gi, "-")
-      .replace(/^-+|-+$/g, "");
-    const filename = `resume-${safe || "resume"}.pdf`;
-    try {
-      const resp = await fetch(url);
-      const blob = await resp.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = objectUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(objectUrl);
-    } catch {
-      // If the blob fetch is blocked, fall back to opening the file directly.
-      window.open(url, "_blank");
-    }
+  // Only runs when the user explicitly asks for a link inside the dialog.
+  const handleShare = async (blob: Blob): Promise<string | null> => {
+    const fd = new FormData();
+    fd.append("file", blob, exportFilename);
+    const result = await shareResumePdf(builderId, fd);
+    return result.success ? result.url ?? null : null;
   };
 
   const nextStep = async () => {
@@ -438,11 +429,11 @@ export default function PremiumResumeBuilder({
                   type="button"
                   size="sm"
                   variant="outline"
-                  disabled={downloadMutation.isPending || !formState.isValid}
+                  disabled={isExporting || !formState.isValid}
                   title={!formState.isValid ? "Fill all required fields to enable export" : undefined}
                   className="rounded-full bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm h-9 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {downloadMutation.isPending ? (
+                  {isExporting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <Download className="h-4 w-4" />
@@ -480,12 +471,12 @@ export default function PremiumResumeBuilder({
               type="button"
               size="sm"
               variant="outline"
-              disabled={downloadMutation.isPending || !formState.isValid}
+              disabled={isExporting || !formState.isValid}
               title={!formState.isValid ? "Fill all required fields to enable export" : undefined}
               onClick={handleGenerateResume}
               className="rounded-full bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm h-9 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {downloadMutation.isPending ? (
+              {isExporting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Download className="h-4 w-4" />
@@ -740,6 +731,14 @@ export default function PremiumResumeBuilder({
           <ResumePreview template={template} data={formData} />
         </Panel>
       </PanelGroup>
+
+      <ResumeExportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        pdf={generatedPdf}
+        filename={exportFilename}
+        onShare={handleShare}
+      />
     </div>
   );
 }
