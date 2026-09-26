@@ -1,12 +1,45 @@
 "use server"
 import httpClient from "@/lib/axios-client";
-import { setTokenInCookies } from "@/lib/token";
 import { cookies } from "next/headers";
 
 import { deleteCookie } from "@/lib/cookie";
 import { signInPayloadType } from "@/interfaces/auth.type";
 import { revalidatePath } from "next/cache";
 import { getCsrfRequestHeaders } from "@/lib/csrf";
+
+const isProduction = process.env.NODE_ENV === "production";
+
+// Replays raw Set-Cookie header strings from a backend response onto this
+// domain's cookie jar, preserving the exact cookie name (incl. __Secure-/
+// __Host- prefixes) and value. This is what lets the middleware later forward
+// a cookie better-auth will actually accept.
+const replaySetCookies = async (setCookie?: string[] | string) => {
+  if (!setCookie) return;
+  const headers = Array.isArray(setCookie) ? setCookie : [setCookie];
+  const cookieStore = await cookies();
+
+  for (const raw of headers) {
+    const [pair, ...attrs] = raw.split(";");
+    if (!pair) continue;
+    const eq = pair.indexOf("=");
+    if (eq < 0) continue;
+    const name = pair.slice(0, eq).trim();
+    const value = pair.slice(eq + 1).trim();
+
+    const maxAgeAttr = attrs
+      .map((a) => a.trim())
+      .find((a) => a.toLowerCase().startsWith("max-age="));
+    const maxAge = maxAgeAttr ? Number(maxAgeAttr.split("=")[1]) : 60 * 60;
+
+    cookieStore.set(name, decodeURIComponent(value), {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      path: "/",
+      maxAge: Number.isFinite(maxAge) ? maxAge : 60 * 60,
+    });
+  }
+};
 
 
 export const getMe = async () => {
@@ -23,7 +56,16 @@ export const getMe = async () => {
     });
     return res.data
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || error.message || "Failed to fetch user");
+    // Not authenticated (or backend unreachable) is a normal, expected state
+    // for this call - return a logged-out shape instead of throwing, so the
+    // server action responds 200 with { data: null } rather than a 500. The
+    // caller (UserContext / server pages) already treats missing data as
+    // "logged out" and lets the middleware handle any redirect.
+    return {
+      success: false,
+      data: null,
+      message: error.response?.data?.message || error.message || "Not authenticated",
+    };
   }
 }
 
@@ -42,13 +84,18 @@ export const handleLogin = async (loginPayload: signInPayloadType) => {
       headers: await getCsrfRequestHeaders(),
     });
 
-    const { sessionToken, user, message } = res.data.data;
+    // Replay the backend's real Set-Cookie header(s) onto this domain's
+    // cookie jar, exact name + signed value + attributes. In production the
+    // session cookie is `__Secure-better-auth.session_token`; hardcoding the
+    // non-prefixed name (old approach) meant better-auth never found/validated
+    // it, so login "succeeded" but every later request read as logged-out.
+    await replaySetCookies(res.headers["set-cookie"]);
 
-    await setTokenInCookies("better-auth.session_token", sessionToken, 60 * 60);
+    const { user, message } = res.data.data;
 
     return {
       success: true,
-      message: message,
+      message: res.data.message ?? message,
       user
     }
   } catch (error: any) {
