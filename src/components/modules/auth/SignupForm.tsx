@@ -10,13 +10,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select' // Added Select imports
 import { Input } from '@/components/ui/input'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { motion } from 'framer-motion'
@@ -40,7 +33,6 @@ export function SignupForm() {
       email: '',
       password: '',
       name: '',
-      role: 'USER', // Added default role
       acceptTerms: false,
     },
   })
@@ -53,11 +45,12 @@ export function SignupForm() {
   })
 
   async function onSubmit(data: RegisterFormData) {
+    // No role sent: public signup always creates a standard USER account
+    // (the backend schema defaults role to "USER").
     const payload = {
       email: data.email,
       password: data.password,
       name: data.name,
-      role: data.role, // Sending role to server
     }
 
     const result = await handleSignup(payload);
@@ -78,46 +71,20 @@ export function SignupForm() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {/* Full Name */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm">Full Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Habibur Rahman" {...field} disabled={isLoading} className="h-9" />
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
-
-            {/* Role Field - Select Menu */}
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm">Account Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
-                    <FormControl>
-                      <SelectTrigger className="h-9">
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="USER">User (Standard)</SelectItem>
-                      <SelectItem value="MANAGER">Manager</SelectItem>
-                      <SelectItem value="ADMIN">Administrator</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
-          </div>
+          {/* Full Name */}
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm">Full Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Habibur Rahman" {...field} disabled={isLoading} className="h-9" />
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
 
           {/* Email Address */}
           <FormField
